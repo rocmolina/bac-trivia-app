@@ -21,9 +21,9 @@ if (!getApps().length) {
 }
 
 // Exportar la instancia inicializada si la necesitas en otros lugares
-// export const firebaseApp = app;
+export const firebaseApp = app;
 // export const db = getFirestore(app); // Solo si usas Firestore desde el cliente
 // export const auth = getAuth(app);   // Solo si usas Firebase Auth desde el cliente
 
 // Por ahora, solo inicializar es suficiente ya que interactuamos vía backend
-export {}; // Exportar algo para que sea tratado como módulo
+// export {}; // Exportar algo para que sea tratado como módulo
