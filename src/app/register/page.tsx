@@ -38,7 +38,7 @@ export default function RegisterPage() {
             // setTimeout(() => router.push('/login'), 3000); // Redirigir tras mensaje
             router.push('/login');
             // -------------------------------------------------
-
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error("Error de registro:", err);
             setError(err.response?.data?.error || err.message || 'Error al registrar el usuario.');

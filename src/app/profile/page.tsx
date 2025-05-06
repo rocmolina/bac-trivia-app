@@ -59,6 +59,7 @@ export default function ProfilePage() {
                     <h3 className="text-lg font-medium text-gray-700 mb-2">Emojis Atrapados:</h3>
                     <div className="flex flex-wrap gap-2 justify-center min-h-[50px] bg-gray-100 p-2 rounded">
                         {user?.itemsCollected && user.itemsCollected.length > 0 ? (
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             user.itemsCollected.map((item: any, index: number) => (
                                 <span key={index} className="text-2xl"> {/* Placeholder: Mostrar emoji real o icono */}
                                     {item.category === 'Ahorro' ? 'iconoAhorro' :
