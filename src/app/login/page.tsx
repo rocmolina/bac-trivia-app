@@ -35,7 +35,7 @@ export default function LoginPage() {
             // storeLogin(userData); // Guardar en store
             router.push('/profile'); // Redirigir a perfil en éxito
             // ----------------------------------------------
-
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error("Error de login:", err);
             setError(err.response?.data?.error || err.message || 'Error al iniciar sesión.');
