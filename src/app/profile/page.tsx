@@ -61,11 +61,11 @@ export default function ProfilePage() {
                         {user?.itemsCollected && user.itemsCollected.length > 0 ? (
                             user.itemsCollected.map((item: any, index: number) => (
                                 <span key={index} className="text-2xl"> {/* Placeholder: Mostrar emoji real o icono */}
-                                    {item.category === 'Ahorro' ? '🐷' :
-                                        item.category === 'Tarjeta' ? '💳' :
-                                            item.category === 'Casa' ? '🏠' :
-                                                item.category === 'Carro' ? '🚗' : '?'}
-                </span>
+                                    {item.category === 'Ahorro' ? 'iconoAhorro' :
+                                        item.category === 'Tarjeta' ? 'iconoTarjeta' :
+                                            item.category === 'Casa' ? 'iconoCasa' :
+                                                item.category === 'Carro' ? 'iconoCarro' : '?'}
+                                </span>
                             ))
                         ) : (
                             <p className="text-sm text-gray-500 italic">Aún no has atrapado ninguno.</p>
