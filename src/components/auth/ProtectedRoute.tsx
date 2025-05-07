@@ -1,9 +1,9 @@
-// components/auth/ProtectedRoute.tsx
+// src/components/auth/ProtectedRoute.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import useUserStore from '@/lib/store/userStore';
+import useUserStore from '@/lib/store/userStore'; // Asegúrate que la ruta sea correcta
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -11,73 +11,86 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const router = useRouter();
+    // Suscribirse al estado de autenticación
     const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+    const persist = useUserStore.persist;
 
-    // Estado para rastrear si el componente se ha montado en el cliente
-    // y si el store de Zustand se ha rehidratado desde el localStorage.
-    const [isClientReady, setIsClientReady] = useState(false);
+    // Estados: 'initial', 'loading', 'authenticated', 'unauthenticated'
+    type Status = 'initial' | 'loading' | 'authenticated' | 'unauthenticated';
+    const [status, setStatus] = useState<Status>('initial');
 
     useEffect(() => {
-        // Este efecto solo se ejecuta en el cliente después del montaje inicial.
-        // Aquí es seguro verificar el estado de hidratación de Zustand.
+        console.log(`ProtectedRoute Effect [Auth Check]: Running. Current hook isAuthenticated: ${isAuthenticated}, Current Status: ${status}`);
 
-        // Función para verificar la autenticación y redirigir si es necesario
-        const checkAuthAndRedirect = () => {
-            if (!useUserStore.getState().isAuthenticated) { // Obtener el estado más reciente
-                console.log('ProtectedRoute: Usuario no autenticado, redirigiendo a /login');
-                router.replace('/login');
-            } else {
-                console.log('ProtectedRoute: Usuario autenticado.');
-                setIsClientReady(true); // Marcar como listo para mostrar contenido
-            }
-        };
-
-        // Verificar si el store ya se hidrató.
-        // El objeto `persist` y sus métodos solo deben usarse si está definido.
-        if (useUserStore.persist && typeof useUserStore.persist.hasHydrated === 'function') {
-            if (useUserStore.persist.hasHydrated()) {
-                console.log('ProtectedRoute: Store ya está hidratado.');
-                checkAuthAndRedirect();
-            } else {
-                console.log('ProtectedRoute: Store no hidratado, esperando onFinishHydration...');
-                // Suscribirse al evento de finalización de hidratación
-                const unsub = useUserStore.persist.onFinishHydration(() => {
-                    console.log('ProtectedRoute: Store hidratado vía onFinishHydration.');
-                    checkAuthAndRedirect();
-                    unsub(); // Desuscribirse después de la primera ejecución
-                });
-                // Llamar a rehydrate por si acaso, aunque usualmente es automático.
-                // Podría ser necesario si la hidratación automática no se dispara como se espera.
-                // useUserStore.persist.rehydrate(); // Usar con precaución, puede causar re-renders
-            }
-        } else {
-            // Fallback si `useUserStore.persist` o `hasHydrated` no están disponibles
-            // Esto podría indicar un problema con la configuración del middleware persist.
-            // En este caso, podríamos asumir que no está autenticado o mostrar un error.
-            // Por ahora, para desarrollo, intentaremos asumir que si no hay persist, no está auth.
-            console.warn('ProtectedRoute: useUserStore.persist o hasHydrated no está disponible. Asumiendo no autenticado.');
-            if (!isAuthenticated) { // Chequea el estado actual por si acaso
-                router.replace('/login');
-            } else {
-                setIsClientReady(true); // Si está autenticado por alguna razón (ej. login reciente sin recarga)
-            }
+        // Verificar si el middleware persist está listo
+        if (!persist || typeof persist.hasHydrated !== 'function') {
+            console.warn('ProtectedRoute: Persist middleware not ready. Relying on initial hook state.');
+            setStatus(isAuthenticated ? 'authenticated' : 'unauthenticated');
+            return;
         }
-    }, [router, isAuthenticated]); // Volver a ejecutar si isAuthenticated cambia (ej. después de login/logout)
 
-    // Mostrar un estado de carga mientras se determina el estado de autenticación en el cliente.
-    // Esto previene el "flash" de contenido protegido o la página de login si el usuario ya está autenticado.
-    if (!isClientReady) {
+        // Esperar a que termine la hidratación si aún no ha ocurrido
+        if (!persist.hasHydrated()) {
+            console.log('ProtectedRoute: Store not hydrated yet, setting status to loading and waiting.');
+            // Establecer estado de carga mientras esperamos
+            // Importante: No establecer a 'unauthenticated' aquí prematuramente
+            if (status !== 'loading') { // Evitar bucle si ya está en loading
+                setStatus('loading');
+            }
+            const unsub = persist.onFinishHydration(() => {
+                console.log('ProtectedRoute: Hydration finished via callback.');
+                // Una vez hidratado, el estado global se actualiza,
+                // lo que hará que este efecto se ejecute de nuevo (debido a la dependencia de isAuthenticated).
+                // No necesitamos hacer nada más aquí excepto desuscribirnos.
+                unsub();
+            });
+            return; // Salir hasta que se hidrate
+        }
+
+        // --- Si llegamos aquí, el store YA está hidratado ---
+        console.log('ProtectedRoute: Store is hydrated.');
+        // Determinar el estado basado en el valor actual suscrito
+        setStatus(isAuthenticated ? 'authenticated' : 'unauthenticated');
+
+    }, [isAuthenticated, persist, status]); // Incluir status para re-evaluar si cambia (ej. de loading)
+
+    useEffect(() => {
+        // EFECTO SEPARADO PARA REDIRECCIONAR basado únicamente en el estado determinado
+        console.log(`ProtectedRoute Effect [Redirect Check]: Running. Status: ${status}`);
+        if (status === 'unauthenticated') {
+            console.log('ProtectedRoute: Redirecting to /login...');
+            router.replace('/login');
+        }
+    }, [status, router]);
+
+
+    // --- Lógica de Renderizado ---
+    if (status === 'initial' || status === 'loading') {
+        console.log(`ProtectedRoute Render: Loading state (Status: ${status})`);
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <p>Verificando sesión...</p>
-                {/* Aquí podrías colocar un spinner o un loader más elaborado */}
             </div>
         );
     }
 
-    // Si isClientReady es true y el efecto de arriba no redirigió (porque estaba autenticado),
-    // entonces renderizamos los hijos.
-    return <>{children}</>;
+    if (status === 'authenticated') {
+        // Doble chequeo por seguridad, aunque el status debería ser la fuente de verdad
+        if (!isAuthenticated) {
+            console.log("ProtectedRoute Render: Status='authenticated' pero hook dice !isAuthenticated. Mostrando fallback.");
+            return ( <div className="flex items-center justify-center min-h-screen"><p>Redirigiendo...</p></div> );
+        }
+        console.log("ProtectedRoute Render: Rendering children (Status: authenticated)");
+        return <>{children}</>;
+    }
+
+    // Si status es 'unauthenticated'
+    console.log("ProtectedRoute Render: Redirecting state (Status: unauthenticated)");
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <p>Redirigiendo...</p>
+        </div>
+    );
 };
 
 export default ProtectedRoute;
