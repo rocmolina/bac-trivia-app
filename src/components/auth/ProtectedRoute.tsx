@@ -1,9 +1,8 @@
 // components/auth/ProtectedRoute.tsx
 'use client';
 
-import React, { useEffect } from 'react';
-import { useRouter }
-    from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import useUserStore from '@/lib/store/userStore';
 
 interface ProtectedRouteProps {
@@ -11,58 +10,73 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const isAuthenticated = useUserStore((state) => state.isAuthenticated);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const isLoadingAuth = useUserStore.persist.hasHydrated; // Para saber si el store ya se hidrató desde localStorage
     const router = useRouter();
+    const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+
+    // Estado para rastrear si el componente se ha montado en el cliente
+    // y si el store de Zustand se ha rehidratado desde el localStorage.
+    const [isClientReady, setIsClientReady] = useState(false);
 
     useEffect(() => {
-        // Esperar a que el store se hidrate desde localStorage
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const checkAuth = async () => {
-            const storeHydrated = useUserStore.persist.hasHydrated();
-            if (!storeHydrated) {
-                // Aun no se ha hidratado, esperar un poco o re-subscribir
-                // Por simplicidad, si no está hidratado y no está autenticado, redirige.
-                // Una solución más robusta podría usar un estado de "loading auth".
-                // console.log("Auth state not hydrated yet...");
-            }
+        // Este efecto solo se ejecuta en el cliente después del montaje inicial.
+        // Aquí es seguro verificar el estado de hidratación de Zustand.
 
-            if (storeHydrated && !isAuthenticated) {
-                console.log('Usuario no autenticado, redirigiendo a login...');
+        // Función para verificar la autenticación y redirigir si es necesario
+        const checkAuthAndRedirect = () => {
+            if (!useUserStore.getState().isAuthenticated) { // Obtener el estado más reciente
+                console.log('ProtectedRoute: Usuario no autenticado, redirigiendo a /login');
                 router.replace('/login');
+            } else {
+                console.log('ProtectedRoute: Usuario autenticado.');
+                setIsClientReady(true); // Marcar como listo para mostrar contenido
             }
         };
 
-        // Ejecutar la verificación. Si la hidratación es asíncrona, puede necesitar un pequeño delay
-        // o una mejor manera de saber cuándo está listo el estado persistido.
-        // Por ahora, la comprobamos en el effect.
-        if (!useUserStore.persist.hasHydrated()) {
-            const unsub = useUserStore.persist.onFinishHydration(() => {
-                console.log("Store hydrated from ProtectedRoute");
-                if (!useUserStore.getState().isAuthenticated) {
-                    router.replace('/login');
-                }
-                unsub();
-            });
+        // Verificar si el store ya se hidrató.
+        // El objeto `persist` y sus métodos solo deben usarse si está definido.
+        if (useUserStore.persist && typeof useUserStore.persist.hasHydrated === 'function') {
+            if (useUserStore.persist.hasHydrated()) {
+                console.log('ProtectedRoute: Store ya está hidratado.');
+                checkAuthAndRedirect();
+            } else {
+                console.log('ProtectedRoute: Store no hidratado, esperando onFinishHydration...');
+                // Suscribirse al evento de finalización de hidratación
+                const unsub = useUserStore.persist.onFinishHydration(() => {
+                    console.log('ProtectedRoute: Store hidratado vía onFinishHydration.');
+                    checkAuthAndRedirect();
+                    unsub(); // Desuscribirse después de la primera ejecución
+                });
+                // Llamar a rehydrate por si acaso, aunque usualmente es automático.
+                // Podría ser necesario si la hidratación automática no se dispara como se espera.
+                // useUserStore.persist.rehydrate(); // Usar con precaución, puede causar re-renders
+            }
         } else {
-            if (!isAuthenticated) {
+            // Fallback si `useUserStore.persist` o `hasHydrated` no están disponibles
+            // Esto podría indicar un problema con la configuración del middleware persist.
+            // En este caso, podríamos asumir que no está autenticado o mostrar un error.
+            // Por ahora, para desarrollo, intentaremos asumir que si no hay persist, no está auth.
+            console.warn('ProtectedRoute: useUserStore.persist o hasHydrated no está disponible. Asumiendo no autenticado.');
+            if (!isAuthenticated) { // Chequea el estado actual por si acaso
                 router.replace('/login');
+            } else {
+                setIsClientReady(true); // Si está autenticado por alguna razón (ej. login reciente sin recarga)
             }
         }
+    }, [router, isAuthenticated]); // Volver a ejecutar si isAuthenticated cambia (ej. después de login/logout)
 
-    }, [isAuthenticated, router]);
-
-    // Si el store aún no se ha hidratado, o si no está autenticado,
-    // podrías mostrar un loader o null para evitar un flash de contenido.
-    if (!useUserStore.persist.hasHydrated() || !isAuthenticated) {
+    // Mostrar un estado de carga mientras se determina el estado de autenticación en el cliente.
+    // Esto previene el "flash" de contenido protegido o la página de login si el usuario ya está autenticado.
+    if (!isClientReady) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <p>Verificando autenticación...</p>
+                <p>Verificando sesión...</p>
+                {/* Aquí podrías colocar un spinner o un loader más elaborado */}
             </div>
-        ); // O un spinner/loader global
+        );
     }
 
+    // Si isClientReady es true y el efecto de arriba no redirigió (porque estaba autenticado),
+    // entonces renderizamos los hijos.
     return <>{children}</>;
 };
 
