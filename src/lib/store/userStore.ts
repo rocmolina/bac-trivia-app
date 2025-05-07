@@ -1,63 +1,60 @@
 // lib/store/userStore.ts
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware'; // Para persistir en localStorage
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-// Definir el tipo para el usuario logueado
-interface UserState {
+export interface UserProfile { // Exportar para usar en otros lugares
     firestoreId: string | null;
     usuarioId: string | null;
     nombre: string | null;
     apellido: string | null;
     puntos: number;
-    // Añadir más campos si son necesarios en el estado global
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    itemsCollected: any[]; // TODO: Definir tipo específico
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    lastPlayedTotem: any; // TODO: Definir tipo específico
+}
+
+interface UserState extends UserProfile {
     isAuthenticated: boolean;
 }
 
-// Definir las acciones
 interface UserActions {
-    login: (userData: Omit<UserState, 'isAuthenticated'>) => void; // Omit<...> porque isAuthenticated se deriva
+    login: (userData: UserProfile) => void; // userData no incluirá isAuthenticated
     logout: () => void;
-    setPuntos: (puntos: number) => void; // Ejemplo de acción para actualizar estado
+    setPuntos: (puntos: number) => void;
+    //// eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //addCollectedItem: (collectedItem: any) => void;
+    // TODO: Añadir más acciones, ej: addCollectedItem, updateLastPlayedTotem
 }
 
-// Estado inicial
-const initialState: Omit<UserState, 'isAuthenticated'> = {
+const initialState: UserProfile = {
     firestoreId: null,
     usuarioId: null,
     nombre: null,
     apellido: null,
     puntos: 0,
+    itemsCollected: [],
+    lastPlayedTotem: {},
 };
 
-// Crear el store con persistencia en localStorage
 const useUserStore = create<UserState & UserActions>()(
     persist(
         (set) => ({
-            // Estado inicial con isAuthenticated
             ...initialState,
-            isAuthenticated: false, // Se inicializa como no autenticado
-
-            // Acción de Login
+            isAuthenticated: false,
             login: (userData) => set({
                 ...userData,
-                isAuthenticated: true, // Marcar como autenticado
+                isAuthenticated: true,
             }),
-
-            // Acción de Logout
             logout: () => set({
-                ...initialState, // Resetear a estado inicial
+                ...initialState,
                 isAuthenticated: false,
             }),
-
-            // Acción de ejemplo para actualizar puntos
-            setPuntos: (puntos) => set({ puntos }),
-
+            setPuntos: (puntos) => set((state) => ({ ...state, puntos })),
         }),
         {
-            name: 'user-auth-storage', // Nombre de la clave en localStorage
-            storage: createJSONStorage(() => localStorage), // Usa localStorage
-            // Opcional: puedes elegir qué partes del estado persistir
-            // partialize: (state) => ({ usuarioId: state.usuarioId, isAuthenticated: state.isAuthenticated }),
+            name: 'bac-user-auth-storage',
+            storage: createJSONStorage(() => localStorage),
         }
     )
 );

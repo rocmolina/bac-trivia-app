@@ -1,20 +1,18 @@
-// app/login/page.tsx
-'use client'; // Necesario para hooks y manejo de eventos
+'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Importar desde 'next/navigation' en App Router
-import Input from '@/components/ui/Input'; // Ajustar ruta si es necesario
-import Button from '@/components/ui/Button'; // Ajustar ruta si es necesario
-// Importar el store y el servicio API (se crearán más adelante)
-// import useUserStore from '@/lib/store/userStore';
-// import { login } from '@/lib/services/api';
+import { useRouter } from 'next/navigation';
+import Input from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import { login } from '@/lib/services/api'; // Importar desde servicio API
+import useUserStore from '@/lib/store/userStore'; // Importar desde store Zustand
 
 export default function LoginPage() {
     const [usuarioId, setUsuarioId] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    // const { login: storeLogin } = useUserStore(); // Obtener acción del store
+    const storeLogin = useUserStore((state) => state.login); // Obtener acción del store
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -28,17 +26,16 @@ export default function LoginPage() {
         }
 
         try {
-            // --- Lógica de Login (se completará en Día 2) ---
             console.log('Intentando iniciar sesión con UsuarioID:', usuarioId);
-            alert(`Simulando login con ${usuarioId}. Redirigiendo a perfil... (Lógica real en Día 2)`);
-            // const userData = await login(usuarioId); // Llamada API real
-            // storeLogin(userData); // Guardar en store
-            router.push('/profile'); // Redirigir a perfil en éxito
-            // ----------------------------------------------
+            const userData = await login(usuarioId); // Llamada API real
+            console.log('Login exitoso:', userData);
+            storeLogin(userData); // Guardar en store (userData debe coincidir con UserState)
+            router.push('/profile'); // Redirigir a perfil si login éxito
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error("Error de login:", err);
-            setError(err.response?.data?.error || err.message || 'Error al iniciar sesión.');
+            const errorMessage = err.response?.data?.error || err.message || 'Error al iniciar sesión. Verifica tu UsuarioID.';
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -59,10 +56,10 @@ export default function LoginPage() {
                         onChange={(e) => setUsuarioId(e.target.value)}
                         placeholder="TuUsuario-123"
                         required
-                        error={error && error.includes('UsuarioID') ? error : undefined} // Mostrar error específico si aplica
+                        error={error && error.includes('UsuarioID') ? error : undefined}
                     />
-                    {error && !error.includes('UsuarioID') && (
-                        <p className="text-sm text-red-600">{error}</p> // Mostrar error general
+                    {error && ( // Mostrar error general si no es específico del campo
+                        <p className="text-sm text-red-600">{error}</p>
                     )}
                     <Button type="submit" className="w-full" isLoading={isLoading}>
                         Ingresar

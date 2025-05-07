@@ -1,5 +1,6 @@
 // app/trivia/page.tsx
 import React, { Suspense } from 'react';
+import ProtectedRoute from '@/components/auth/ProtectedRoute'; // Importar
 import TriviaWorkflow from '@/components/trivia/TriviaWorkflow'; // Ajusta la ruta si es necesario
 
 // Componente de Fallback para Suspense (puedes hacerlo más elaborado)
@@ -12,12 +13,23 @@ function TriviaLoadingFallback() {
     );
 }
 
-export default function TriviaPageContainer() {
+// Este es el componente que se exporta para la ruta /trivia
+function TriviaPageContent() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+            {/* Suspense es necesario porque TriviaWorkflow usa useSearchParams */}
             <Suspense fallback={<TriviaLoadingFallback />}>
                 <TriviaWorkflow />
             </Suspense>
         </div>
+    );
+}
+
+// Exportación de la página envuelta en ProtectedRoute
+export default function TriviaPageContainer() {
+    return (
+        <ProtectedRoute>
+            <TriviaPageContent />
+        </ProtectedRoute>
     );
 }
