@@ -18,7 +18,7 @@ export default function RootLayout({
     return (
         <html lang="es">
         <body className={inter.className}>
-        {/* Aquí podrías añadir un Navbar/Header/Footer global si lo necesitas */}
+        {/* Aquí se puede añadir un Navbar/Header/Footer global en caso de ser necesario */}
         <main className="min-h-screen bg-gray-100"> {/* Fondo base */}
             {children}
         </main>

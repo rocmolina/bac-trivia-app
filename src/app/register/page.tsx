@@ -1,11 +1,10 @@
-// app/register/page.tsx
 'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-// import { register } from '@/lib/services/api'; // Se creará después
+import { register } from '@/lib/services/api'; // Importar desde servicio API
 
 export default function RegisterPage() {
     const [nombre, setNombre] = useState('');
@@ -27,21 +26,18 @@ export default function RegisterPage() {
             setIsLoading(false);
             return;
         }
-        // TODO: Añadir validación de formato de cédula si es necesario
+        // TODO: Considerar validación de formato de cédula aquí o en backend
 
         try {
-            // --- Lógica de Registro (se completará en Día 2) ---
             console.log('Registrando:', { nombre, apellido, cedula });
-            alert(`Simulando registro para ${nombre}. Redirigiendo a login... (Lógica real en Día 2)`);
-            // const result = await register({ nombre, apellido, cedula }); // Llamada API real
-            // setSuccessMessage(`¡Registro exitoso! Tu UsuarioID es: ${result.usuarioId}. Ahora puedes iniciar sesión.`);
-            // setTimeout(() => router.push('/login'), 3000); // Redirigir tras mensaje
-            router.push('/login');
-            // -------------------------------------------------
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const result = await register({ nombre, apellido, cedula }); // Llamada API real
+            console.log('Registro exitoso:', result);
+            setSuccessMessage(`¡Registro exitoso! Tu UsuarioID es: ${result.usuarioId}. Serás redirigido para iniciar sesión.`);
+            setTimeout(() => router.push('/login'), 3000); // Redirigir tras mensaje
         } catch (err: any) {
             console.error("Error de registro:", err);
-            setError(err.response?.data?.error || err.message || 'Error al registrar el usuario.');
+            const errorMessage = err.response?.data?.error || err.message || 'Error al registrar el usuario.';
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -54,31 +50,9 @@ export default function RegisterPage() {
                     BAC Trivia - Registro
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <Input
-                        label="Nombre"
-                        id="nombre"
-                        type="text"
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
-                        required
-                    />
-                    <Input
-                        label="Apellido"
-                        id="apellido"
-                        type="text"
-                        value={apellido}
-                        onChange={(e) => setApellido(e.target.value)}
-                        required
-                    />
-                    <Input
-                        label="Cédula"
-                        id="cedula"
-                        type="text" // Ojo con datos sensibles, considerar seguridad
-                        value={cedula}
-                        onChange={(e) => setCedula(e.target.value)}
-                        placeholder="Ej: 001-123456-0001A"
-                        required
-                    />
+                    <Input label="Nombre" id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+                    <Input label="Apellido" id="apellido" type="text" value={apellido} onChange={(e) => setApellido(e.target.value)} required />
+                    <Input label="Cédula" id="cedula" type="text" value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="Ej: 001-123456-0001A" required />
                     {error && <p className="text-sm text-red-600">{error}</p>}
                     {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
                     <Button type="submit" className="w-full" isLoading={isLoading} disabled={!!successMessage}>
