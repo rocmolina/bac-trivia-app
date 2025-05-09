@@ -282,7 +282,7 @@ function JugarContent() {
                     }
                 } catch (err) {
                     console.error("Error requesting AR session manually:", err);
-                    setArMessage("No se pudo iniciar la sesión AR. Intenta de nuevo.");
+                    setArMessage("No se pudo iniciar la sesión AR. Intenta de nuevo: " + err);
                     setCurrentQrData(null); // Permitir re-escanear
                 }
             };
