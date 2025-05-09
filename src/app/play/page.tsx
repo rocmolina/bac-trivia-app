@@ -1,4 +1,3 @@
-// src/app/play/page.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } from 'react';
@@ -29,7 +28,6 @@ interface PlacedEmojiProps {
     scale?: number;
 }
 
-// --- Componente para el "Emoji" AR (SVG en un Plano) ---
 const PlacedEmoji: React.FC<PlacedEmojiProps> = ({ position, quaternion, category, onClick, scale = 0.4 }) => {
     const groupRef = useRef<THREE.Group>(null);
     let svgUrl = '/icons/default.svg';
@@ -67,105 +65,82 @@ const PlacedEmoji: React.FC<PlacedEmojiProps> = ({ position, quaternion, categor
     );
 };
 
-// --- Componente de la Escena AR ---
 interface ARContentSceneProps {
     onPlaceObject: (pose: { position: THREE.Vector3Tuple; quaternion: THREE.QuaternionTuple }) => void;
     placedObjectData: PlacedObjectData | null;
     onObjectTap: (objectData: PlacedObjectData) => void;
     reticleRef: React.RefObject<THREE.Mesh | null>;
-    activeHitTestSourceFromParent: XRHitTestSource | null; // Renombrado para claridad
+    activeHitTestSourceFromParent: XRHitTestSource | null;
 }
 
 const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedObjectData, onObjectTap, reticleRef, activeHitTestSourceFromParent }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { gl, camera } = useThree();
     const session = useXR((state) => state.session);
-    const isPresenting = !!session; // Derivado de la sesión en el store de @react-three/xr
+    const isPresenting = !!session;
 
-    // Log para verificar si este componente se monta y qué props recibe
     useEffect(() => {
         console.log("ARContentScene Update:", { sessionAvailable: !!session, isPresenting, activeHitTestSourceFromParent });
         if (isPresenting && !session) {
-            console.warn("ARContentScene: isPresenting is true (derived), but session from useXR is null/undefined!");
+            console.warn("ARContentScene: isPresenting is true, but session is null!");
         }
     }, [session, isPresenting, activeHitTestSourceFromParent]);
 
-
-    useFrame((state, delta, xrFrame) => { // xrFrame es el XRFrame actual
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    useFrame((state) => {
+        const xrFrame = gl.xr.getFrame?.();
         if (!reticleRef.current) return;
 
-        const player = camera.parent; // El rig de la cámara XR
-
-        if (!isPresenting || !player || !xrFrame) {
-            if (isPresenting) { // Solo loguear si se supone que estamos presentando pero algo falta
-                console.log("ARContentScene useFrame: Early exit. Player or XRFrame missing.", {
-                    hookIsPresenting: isPresenting,
-                    playerExists: !!player,
-                    xrFrameExists: !!xrFrame,
-                });
-            }
+        if (!isPresenting || !xrFrame) {
             reticleRef.current.visible = false;
             return;
         }
 
-        if (!activeHitTestSourceFromParent) { // Usar el hit test source pasado como prop
-            console.log("ARContentScene useFrame: No activeHitTestSourceFromParent.");
+        if (!activeHitTestSourceFromParent) {
             reticleRef.current.visible = false;
             return;
         }
 
         const hitTestResults = xrFrame.getHitTestResults(activeHitTestSourceFromParent);
-        console.log("ARContentScene useFrame: Hit test results length:", hitTestResults.length);
-
         if (hitTestResults.length > 0) {
             const hit = hitTestResults[0];
-            const currentReferenceSpace = gl.xr.getReferenceSpace(); // Espacio de referencia del renderer
+            const currentReferenceSpace = gl.xr.getReferenceSpace();
             if (currentReferenceSpace) {
                 const hitPose = hit.getPose(currentReferenceSpace);
                 if (hitPose) {
-                    console.log("ARContentScene useFrame: Hit pose obtained. Setting reticle visible.");
                     reticleRef.current.visible = true;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     reticleRef.current.position.copy(hitPose.transform.position as any);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     reticleRef.current.quaternion.copy(hitPose.transform.orientation as any);
-                } else {
-                    console.log("ARContentScene useFrame: Hit pose could not be obtained.");
-                    reticleRef.current.visible = false;
+                    return;
                 }
-            } else {
-                console.log("ARContentScene useFrame: No currentReferenceSpace from gl.xr.");
-                reticleRef.current.visible = false;
             }
-        } else {
-            reticleRef.current.visible = false;
         }
+
+        reticleRef.current.visible = false;
     });
 
     useEffect(() => {
-        const currentSession = session; // session de useXR()
+        const currentSession = session;
         if (!currentSession) return;
         const handleSelect = () => {
-            console.log("ARContentScene: Session 'select' event (tap on screen).");
             if (reticleRef.current?.visible) {
-                console.log("ARContentScene: Reticle visible, calling onPlaceObject.");
                 onPlaceObject({
                     position: reticleRef.current.position.toArray() as THREE.Vector3Tuple,
                     quaternion: reticleRef.current.quaternion.toArray() as THREE.QuaternionTuple,
                 });
-            } else {
-                console.log("ARContentScene: Reticle NOT visible, onPlaceObject not called.");
             }
         };
         currentSession.addEventListener('select', handleSelect);
         return () => { currentSession.removeEventListener('select', handleSelect); };
     }, [session, onPlaceObject, reticleRef]);
 
-
     return (
         <>
             <ambientLight intensity={1.8} />
             <directionalLight position={[2, 8, 5]} intensity={1.5} castShadow={true}/>
-            <mesh ref={reticleRef} visible={false}> {/* Inicia invisible */}
+            <mesh ref={reticleRef} visible={false}>
                 <ringGeometry args={[0.07, 0.1, 24]} />
                 <meshBasicMaterial color="yellow" transparent={true} opacity={0.8} side={THREE.DoubleSide} depthTest={false} />
             </mesh>
@@ -178,8 +153,7 @@ const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedOb
                     onClick={() => onObjectTap(placedObjectData)}
                 />
             )}
-            {/* Cubo de prueba para ver si la escena AR se renderiza */}
-            {isPresenting && ( // Solo mostrar si estamos presentando
+            {isPresenting && (
                 <mesh position={[0, 0.1, -0.8]} scale={0.1}>
                     <boxGeometry args={[0.1, 0.1, 0.1]} />
                     <meshStandardMaterial color="magenta" />
