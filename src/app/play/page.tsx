@@ -11,7 +11,6 @@ import { Canvas, useThree, useFrame, ThreeEvent } from '@react-three/fiber';
 import { Svg } from '@react-three/drei';
 import * as THREE from 'three';
 import { XR, useXR, createXRStore } from '@react-three/xr';
-import Script from "next/script";
 
 // --- Interfaces ---
 interface PlacedObjectData {
@@ -74,47 +73,56 @@ interface ARContentSceneProps {
     placedObjectData: PlacedObjectData | null;
     onObjectTap: (objectData: PlacedObjectData) => void;
     reticleRef: React.RefObject<THREE.Mesh | null>;
-    activeHitTestSource: XRHitTestSource | null;
+    activeHitTestSourceFromParent: XRHitTestSource | null; // Renombrado para claridad
 }
 
-const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedObjectData, onObjectTap, reticleRef, activeHitTestSource }) => {
+const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedObjectData, onObjectTap, reticleRef, activeHitTestSourceFromParent }) => {
     const { gl, camera } = useThree();
     const session = useXR((state) => state.session);
-    const isPresenting = !!session;
+    const isPresenting = !!session; // Derivado de la sesión en el store de @react-three/xr
 
     // Log para verificar si este componente se monta y qué props recibe
     useEffect(() => {
-        console.log("ARContentScene mounted. ActiveHitTestSource:", activeHitTestSource);
-    }, [activeHitTestSource]);
-
-    useFrame((state, delta, xrFrame) => {
-        if (!reticleRef.current) {
-            console.log("ARContentScene useFrame: reticleRef.current is null");
-            return;
+        console.log("ARContentScene Update:", { sessionAvailable: !!session, isPresenting, activeHitTestSourceFromParent });
+        if (isPresenting && !session) {
+            console.warn("ARContentScene: isPresenting is true (derived), but session from useXR is null/undefined!");
         }
-        const player = camera.parent;
+    }, [session, isPresenting, activeHitTestSourceFromParent]);
+
+
+    useFrame((state, delta, xrFrame) => { // xrFrame es el XRFrame actual
+        if (!reticleRef.current) return;
+
+        const player = camera.parent; // El rig de la cámara XR
 
         if (!isPresenting || !player || !xrFrame) {
-            console.log("ARContentScene useFrame: Not presenting or no player/xrFrame.", {isPresenting, playerExists: !!player, xrFrameExists: !!xrFrame});
-            reticleRef.current.visible = false;
-            return;
-        }
-        if (!activeHitTestSource) {
-            console.log("ARContentScene useFrame: No activeHitTestSource.");
+            if (isPresenting) { // Solo loguear si se supone que estamos presentando pero algo falta
+                console.log("ARContentScene useFrame: Early exit. Player or XRFrame missing.", {
+                    hookIsPresenting: isPresenting,
+                    playerExists: !!player,
+                    xrFrameExists: !!xrFrame,
+                });
+            }
             reticleRef.current.visible = false;
             return;
         }
 
-        const hitTestResults = xrFrame.getHitTestResults(activeHitTestSource);
+        if (!activeHitTestSourceFromParent) { // Usar el hit test source pasado como prop
+            console.log("ARContentScene useFrame: No activeHitTestSourceFromParent.");
+            reticleRef.current.visible = false;
+            return;
+        }
+
+        const hitTestResults = xrFrame.getHitTestResults(activeHitTestSourceFromParent);
         console.log("ARContentScene useFrame: Hit test results length:", hitTestResults.length);
 
         if (hitTestResults.length > 0) {
             const hit = hitTestResults[0];
-            const currentReferenceSpace = gl.xr.getReferenceSpace(); // Este es el espacio 'local-floor' o 'viewer' actual
+            const currentReferenceSpace = gl.xr.getReferenceSpace(); // Espacio de referencia del renderer
             if (currentReferenceSpace) {
                 const hitPose = hit.getPose(currentReferenceSpace);
                 if (hitPose) {
-                     console.log("ARContentScene useFrame: Hit pose obtained. Setting reticle visible.");
+                    console.log("ARContentScene useFrame: Hit pose obtained. Setting reticle visible.");
                     reticleRef.current.visible = true;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     reticleRef.current.position.copy(hitPose.transform.position as any);
@@ -134,10 +142,10 @@ const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedOb
     });
 
     useEffect(() => {
-        const currentSession = session;
+        const currentSession = session; // session de useXR()
         if (!currentSession) return;
-        const handleSelect = () => { // Este es el 'select' global de la sesión (tap en pantalla)
-            console.log("ARContentScene: Session 'select' event triggered.");
+        const handleSelect = () => {
+            console.log("ARContentScene: Session 'select' event (tap on screen).");
             if (reticleRef.current?.visible) {
                 console.log("ARContentScene: Reticle visible, calling onPlaceObject.");
                 onPlaceObject({
@@ -170,8 +178,13 @@ const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedOb
                     onClick={() => onObjectTap(placedObjectData)}
                 />
             )}
-            {/* Puedes añadir un cubo simple para verificar si algo se renderiza en AR */}
-            {/* <mesh position={[0, 0, -1]}> <boxGeometry args={[0.1,0.1,0.1]}/> <meshStandardMaterial color="red"/> </mesh> */}
+            {/* Cubo de prueba para ver si la escena AR se renderiza */}
+            {isPresenting && ( // Solo mostrar si estamos presentando
+                <mesh position={[0, 0.1, -0.8]} scale={0.1}>
+                    <boxGeometry args={[0.1, 0.1, 0.1]} />
+                    <meshStandardMaterial color="magenta" />
+                </mesh>
+            )}
         </>
     );
 };
@@ -191,12 +204,15 @@ function JugarContent() {
     const QR_READER_ELEMENT_ID = "qr-reader-container";
 
     const [isARSupported, setIsARSupported] = useState<boolean | null>(null);
-    const [activeXrSession, setActiveXrSession] = useState<XRSession | null>(null);
+    const [activeXrSessionObject, setActiveXrSessionObject] = useState<XRSession | null>(null);
     const [manualHitTestSource, setManualHitTestSource] = useState<XRHitTestSource | null>(null);
     const [placedObjectData, setPlacedObjectData] = useState<PlacedObjectData | null>(null);
 
     const reticleRef = useRef<THREE.Mesh | null>(null);
-    const xrStore = useMemo(() => createXRStore(), []);
+    const xrStore = useMemo(() => {
+        console.log("JugarContent: Creating XR Store");
+        return createXRStore();
+    }, []);
 
 
     useEffect(() => {
@@ -256,19 +272,26 @@ function JugarContent() {
 
     const handleSessionEnd = useCallback(() => {
         console.log("JugarContent: handleSessionEnd called");
-        setActiveXrSession(null);
+        setActiveXrSessionObject(null);
         setManualHitTestSource(null);
         setPlacedObjectData(null);
         setArMessage("Sesión AR finalizada. Puedes iniciarla de nuevo o escanear otro QR.");
         setShowArButton(!!currentQrData);
-        xrStore.setState({ session: undefined });
+        // Actualizar el store de @react-three/xr para reflejar que no hay sesión
+        // y limpiar el hitTestSource.
+        // El store de @react-three/xr espera un objeto parcial de XRState.
+        // 'isPresenting' y 'hitTestSource' no son propiedades directas de XRState que podamos setear así.
+        // Solo 'session' y 'mode' son las principales.
+        xrStore.setState({ session: undefined, mode: null });
     }, [xrStore, currentQrData]);
 
     const handleSessionStart = useCallback(async (session: XRSession) => {
         console.log("JugarContent: handleSessionStart called with session:", session);
-        setActiveXrSession(session);
-        xrStore.setState({ session: session });
-        setArMessage("Configurando sesión AR..."); // Mensaje intermedio
+        setActiveXrSessionObject(session); // Guardar la sesión nativa
+
+        // Actualizar el store de @react-three/xr con la nueva sesión.
+        // Esto permitirá que useXR() en ARContentScene obtenga la sesión y derive isPresenting.
+        xrStore.setState({ session: session, mode: 'immersive-ar' });
         setShowArButton(false);
 
         session.addEventListener('end', handleSessionEnd);
@@ -281,8 +304,10 @@ function JugarContent() {
             const newHitTestSource = await session.requestHitTestSource?.({ space: viewerSpace });
 
             if (newHitTestSource) {
-                setManualHitTestSource(newHitTestSource);
-                console.log("JugarContent: Manual Hit Test Source created and set:", newHitTestSource);
+                setManualHitTestSource(newHitTestSource); // Guardar para pasarlo a ARContentScene
+                // No necesitamos setear hitTestSource en el xrStore, ya que no es una propiedad de XRState.
+                // Lo pasaremos como prop a ARContentScene.
+                console.log("JugarContent: Manual Hit Test Source created and stored locally:", newHitTestSource);
                 setArMessage("¡Sesión AR iniciada! Toca una superficie para colocar el emoji.");
             } else {
                 setArMessage("Detección de superficies (hit-test) no disponible en esta sesión.");
@@ -292,26 +317,22 @@ function JugarContent() {
         } catch (error) {
             console.error("JugarContent: Error setting up hit-test source:", error);
             setArMessage("Error configurando detección de superficies: " + error);
-            // Considerar terminar la sesión si el hit-test es crucial y falla
-            // session.end().catch(console.error);
+            // Terminar la sesión si el hit-test es crucial y falla
+            session.end().catch(console.error);
         }
     }, [handleSessionEnd, xrStore]);
 
     const onClickInitiateARSession = useCallback(async () => {
-        if (!currentQrData || activeXrSession || isARSupported !== true) {
-            console.warn("onClickInitiateARSession: Pre-conditions not met.", { currentQrData, activeXrSession, isARSupported });
+        if (!currentQrData || activeXrSessionObject || isARSupported !== true) {
+            console.warn("onClickInitiateARSession: Pre-conditions not met.", { currentQrData, activeXrSessionObject, isARSupported });
             setArMessage("No se puede iniciar AR. Escanea un QR primero o verifica el soporte AR.");
             return;
         }
-
-        setArMessage("Solicitando sesión AR...");
-        setShowArButton(false);
-
         try {
+            setShowArButton(false);
             setArMessage("Solicitando sesión AR...");
-            setShowArButton(false); // Ocultar botón mientras se intenta iniciar
             const session = await navigator.xr?.requestSession('immersive-ar', {
-                requiredFeatures: ['hit-test', 'viewer', 'dom-overlay'],
+                requiredFeatures: ['hit-test', 'local-floor', 'dom-overlay'],
                 domOverlay: { root: document.body }
             });
             if (session) {
@@ -321,18 +342,12 @@ function JugarContent() {
                 setShowArButton(true);
             }
         } catch (err) {
-            console.error("Error requesting AR session manually:", err);
+            console.error("onClickInitiateARSession: Error requesting AR session:", err);
             setArMessage(`No se pudo iniciar la sesión AR: ${err instanceof Error ? err.message : String(err)}`);
             setShowArButton(true);
         }
-    }, [currentQrData, activeXrSession, isARSupported, handleSessionStart]);
+    }, [currentQrData, activeXrSessionObject, isARSupported, handleSessionStart]);
 
-    // ELIMINADO: El useEffect que llamaba automáticamente a requestAndStartARSession
-    // useEffect(() => {
-    //     if (currentQrData && !activeXrSession && isARSupported === true) {
-    //         // NO LLAMAR AUTOMÁTICAMENTE
-    //     }
-    // }, [currentQrData, activeXrSession, isARSupported, requestAndStartARSession]); // requestAndStartARSession quitado de dependencias
 
     const handlePlaceObject = useCallback((pose: { position: THREE.Vector3Tuple; quaternion: THREE.QuaternionTuple }) => {
         if (!currentQrData) return;
@@ -353,18 +368,15 @@ function JugarContent() {
 
     // --- Renderizado Principal ---
     return (
-        <>
-            <Script src="https://cdn.jsdelivr.net/npm/eruda" strategy="beforeInteractive" />
-            <Script id={"eruda"}>eruda.init();</Script>
         <div className="relative w-screen h-screen overflow-hidden bg-gray-900 text-white select-none flex flex-col">
             <header className="w-full z-20 p-3 flex justify-between items-center bg-gradient-to-b from-black/70 to-transparent shrink-0">
-                <h1 className="text-lg sm:text-xl font-semibold">BAC Trivia - {activeXrSession ? "Modo AR" : "Modo Escaneo"}</h1>
-                {activeXrSession ? ( <Button onClick={() => activeXrSession.end().catch(console.error)} variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-white/30">Salir AR</Button> )
+                <h1 className="text-lg sm:text-xl font-semibold">BAC Trivia - {activeXrSessionObject ? "Modo AR" : "Modo Escaneo"}</h1>
+                {activeXrSessionObject ? ( <Button onClick={() => activeXrSessionObject.end().catch(console.error)} variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-white/30">Salir AR</Button> )
                     : ( <Button onClick={() => router.push('/profile')} variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-white/30">Perfil</Button> )}
             </header>
 
             <main className="flex-grow relative">
-                {!activeXrSession && (
+                {!activeXrSessionObject && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center p-4 z-10 text-center">
                         {isARSupported === null && <p className="text-lg animate-pulse">Verificando soporte AR...</p>}
                         {isARSupported === false && <p className="text-red-400 text-lg">{arMessage}</p>}
@@ -379,7 +391,7 @@ function JugarContent() {
                                 )}
                                 <div id={QR_READER_ELEMENT_ID} className={`w-full max-w-[300px] sm:max-w-[350px] aspect-square rounded-lg overflow-hidden bg-gray-800 shadow-xl border-2 border-gray-600 ${isScanning ? 'block' : 'hidden'}`}></div>
                                 {isScanning && (<Button onClick={stopScanning} variant="secondary" size="md" className="mt-6 bg-white/20 hover:bg-white/30 text-white border-white/30">Cancelar Escaneo</Button>)}
-                                {showArButton && currentQrData && !activeXrSession && (
+                                {showArButton && currentQrData && !activeXrSessionObject && (
                                     <div className="mt-6 flex flex-col items-center gap-4">
                                         <p className="text-green-400">{arMessage}</p>
                                         <Button onClick={onClickInitiateARSession} variant="primary" size="lg" className="shadow-lg px-8 py-3">
@@ -390,7 +402,7 @@ function JugarContent() {
                                         </Button>
                                     </div>
                                 )}
-                                {currentQrData && !activeXrSession && !showArButton && (
+                                {currentQrData && !activeXrSessionObject && !showArButton && (
                                     <p className="mt-4 text-blue-400 animate-pulse">{arMessage}</p>
                                 )}
                             </>
@@ -398,8 +410,7 @@ function JugarContent() {
                     </div>
                 )}
 
-                {/* Contenido AR (Canvas y Mensaje Flotante) */}
-                {activeXrSession && isARSupported === true && (
+                {activeXrSessionObject && isARSupported === true && (
                     <>
                         <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-20 p-3 bg-black bg-opacity-75 rounded-lg shadow-lg max-w-[90%]">
                             <p className="text-sm text-center text-gray-100">{arMessage}</p>
@@ -411,7 +422,7 @@ function JugarContent() {
                                     placedObjectData={placedObjectData}
                                     onObjectTap={handleObjectTap}
                                     reticleRef={reticleRef}
-                                    activeHitTestSource={manualHitTestSource}
+                                    activeHitTestSourceFromParent={manualHitTestSource} // Pasar el hitTestSource creado manualmente
                                 />
                             </XR>
                         </Canvas>
@@ -419,7 +430,6 @@ function JugarContent() {
                 )}
             </main>
         </div>
-        </>
     );
 }
 
