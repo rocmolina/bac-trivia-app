@@ -311,7 +311,7 @@ function JugarContent() {
             setArMessage("Solicitando sesión AR...");
             setShowArButton(false); // Ocultar botón mientras se intenta iniciar
             const session = await navigator.xr?.requestSession('immersive-ar', {
-                requiredFeatures: ['hit-test', 'local', 'dom-overlay'],
+                requiredFeatures: ['hit-test', 'viewer', 'dom-overlay'],
                 domOverlay: { root: document.body }
             });
             if (session) {
