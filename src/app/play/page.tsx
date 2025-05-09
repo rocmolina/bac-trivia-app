@@ -81,45 +81,70 @@ const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedOb
     const session = useXR((state) => state.session);
     const isPresenting = !!session;
 
+    // Log para verificar si este componente se monta y qué props recibe
+    useEffect(() => {
+        console.log("ARContentScene mounted. ActiveHitTestSource:", activeHitTestSource);
+    }, [activeHitTestSource]);
+
     useFrame((state, delta, xrFrame) => {
-        if (!reticleRef.current) return;
+        if (!reticleRef.current) {
+            console.log("ARContentScene useFrame: reticleRef.current is null");
+            return;
+        }
         const player = camera.parent;
 
         if (!isPresenting || !player || !xrFrame) {
+            console.log("ARContentScene useFrame: Not presenting or no player/xrFrame.", {isPresenting, playerExists: !!player, xrFrameExists: !!xrFrame});
             reticleRef.current.visible = false;
             return;
         }
         if (!activeHitTestSource) {
+            console.log("ARContentScene useFrame: No activeHitTestSource.");
             reticleRef.current.visible = false;
             return;
         }
 
         const hitTestResults = xrFrame.getHitTestResults(activeHitTestSource);
+        console.log("ARContentScene useFrame: Hit test results length:", hitTestResults.length);
+
         if (hitTestResults.length > 0) {
             const hit = hitTestResults[0];
-            const currentReferenceSpace = gl.xr.getReferenceSpace();
+            const currentReferenceSpace = gl.xr.getReferenceSpace(); // Este es el espacio 'local-floor' o 'viewer' actual
             if (currentReferenceSpace) {
                 const hitPose = hit.getPose(currentReferenceSpace);
                 if (hitPose) {
+                     console.log("ARContentScene useFrame: Hit pose obtained. Setting reticle visible.");
                     reticleRef.current.visible = true;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     reticleRef.current.position.copy(hitPose.transform.position as any);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     reticleRef.current.quaternion.copy(hitPose.transform.orientation as any);
-                } else { reticleRef.current.visible = false; }
-            } else { reticleRef.current.visible = false; }
-        } else { reticleRef.current.visible = false; }
+                } else {
+                    console.log("ARContentScene useFrame: Hit pose could not be obtained.");
+                    reticleRef.current.visible = false;
+                }
+            } else {
+                console.log("ARContentScene useFrame: No currentReferenceSpace from gl.xr.");
+                reticleRef.current.visible = false;
+            }
+        } else {
+            reticleRef.current.visible = false;
+        }
     });
 
     useEffect(() => {
         const currentSession = session;
         if (!currentSession) return;
-        const handleSelect = () => {
+        const handleSelect = () => { // Este es el 'select' global de la sesión (tap en pantalla)
+            console.log("ARContentScene: Session 'select' event triggered.");
             if (reticleRef.current?.visible) {
+                console.log("ARContentScene: Reticle visible, calling onPlaceObject.");
                 onPlaceObject({
                     position: reticleRef.current.position.toArray() as THREE.Vector3Tuple,
                     quaternion: reticleRef.current.quaternion.toArray() as THREE.QuaternionTuple,
                 });
+            } else {
+                console.log("ARContentScene: Reticle NOT visible, onPlaceObject not called.");
             }
         };
         currentSession.addEventListener('select', handleSelect);
@@ -130,8 +155,8 @@ const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedOb
     return (
         <>
             <ambientLight intensity={1.8} />
-            <directionalLight position={[2, 8, 5]} intensity={1.5} castShadow={true} />
-            <mesh ref={reticleRef} visible={false}>
+            <directionalLight position={[2, 8, 5]} intensity={1.5} castShadow={true}/>
+            <mesh ref={reticleRef} visible={false}> {/* Inicia invisible */}
                 <ringGeometry args={[0.07, 0.1, 24]} />
                 <meshBasicMaterial color="yellow" transparent={true} opacity={0.8} side={THREE.DoubleSide} depthTest={false} />
             </mesh>
@@ -144,6 +169,8 @@ const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedOb
                     onClick={() => onObjectTap(placedObjectData)}
                 />
             )}
+            {/* Puedes añadir un cubo simple para verificar si algo se renderiza en AR */}
+            {/* <mesh position={[0, 0, -1]}> <boxGeometry args={[0.1,0.1,0.1]}/> <meshStandardMaterial color="red"/> </mesh> */}
         </>
     );
 };
@@ -157,7 +184,7 @@ function JugarContent() {
     const [isScanning, setIsScanning] = useState(false);
     const [manualError, setManualError] = useState<string | null>(null);
     const [arMessage, setArMessage] = useState<string>("Apunta al QR del tótem para iniciar.");
-    const [showArButton, setShowArButton] = useState(false); // Para mostrar el botón "Iniciar AR"
+    const [showArButton, setShowArButton] = useState(false);
 
     const scannerRef = useRef<Html5QrcodeScanner | null>(null);
     const QR_READER_ELEMENT_ID = "qr-reader-container";
@@ -205,10 +232,10 @@ function JugarContent() {
                 if (isScanningRef.current) {
                     console.log(`QR Detectado! Texto: ${decodedText}`);
                     stopScanning();
-                    setScanResult(result); // Guardar el resultado completo del escáner
-                    setCurrentQrData(decodedText); // Guardar el texto decodificado
+                    setScanResult(result);
+                    setCurrentQrData(decodedText);
                     setArMessage(`QR Escaneado: ${decodedText}. Presiona "Iniciar AR".`);
-                    setShowArButton(true); // Mostrar el botón para iniciar AR
+                    setShowArButton(true);
                 }
             };
             html5QrCodeScanner.render(qrCodeSuccessCallback, (errorMessage) => { console.warn("QR Scan Error (ignorable):", errorMessage); });
@@ -227,47 +254,58 @@ function JugarContent() {
     useEffect(() => () => stopScanning(), [stopScanning]);
 
     const handleSessionEnd = useCallback(() => {
-        console.log("AR Session ended handler in JugarContent");
+        console.log("JugarContent: handleSessionEnd called");
         setActiveXrSession(null);
         setManualHitTestSource(null);
         setPlacedObjectData(null);
         setArMessage("Sesión AR finalizada. Puedes iniciarla de nuevo o escanear otro QR.");
-        setShowArButton(!!currentQrData); // Mostrar botón Iniciar AR si ya había un QR escaneado
+        setShowArButton(!!currentQrData);
         xrStore.setState({ session: undefined });
     }, [xrStore, currentQrData]);
 
     const handleSessionStart = useCallback(async (session: XRSession) => {
-        console.log("AR Session granted by manual request:", session);
+        console.log("JugarContent: handleSessionStart called with session:", session);
         setActiveXrSession(session);
         xrStore.setState({ session: session });
-        setArMessage("¡Sesión AR iniciada! Toca una superficie para colocar el emoji.");
-        setShowArButton(false); // Ocultar botón de iniciar AR
+        setArMessage("Configurando sesión AR..."); // Mensaje intermedio
+        setShowArButton(false);
 
         session.addEventListener('end', handleSessionEnd);
 
         try {
+            console.log("JugarContent: Requesting viewer reference space...");
             const viewerSpace = await session.requestReferenceSpace('viewer');
+            console.log("JugarContent: Viewer space obtained:", viewerSpace);
+            console.log("JugarContent: Requesting hit-test source...");
             const newHitTestSource = await session.requestHitTestSource?.({ space: viewerSpace });
+
             if (newHitTestSource) {
                 setManualHitTestSource(newHitTestSource);
-                console.log("Manual Hit Test Source created and stored.");
+                console.log("JugarContent: Manual Hit Test Source created and set:", newHitTestSource);
+                setArMessage("¡Sesión AR iniciada! Toca una superficie para colocar el emoji.");
             } else {
-                setArMessage("Detección de superficies (hit-test) no disponible.");
-                console.warn("Manual Hit Test Source creation failed.");
+                setArMessage("Detección de superficies (hit-test) no disponible en esta sesión.");
+                console.warn("JugarContent: Manual Hit Test Source creation failed.");
+                // No terminar la sesión aquí necesariamente, podría ser un problema temporal o de features
             }
         } catch (error) {
-            console.error("Error setting up hit-test:", error);
-            setArMessage("Error configurando detección de superficies.");
-            session.end().catch(console.error);
+            console.error("JugarContent: Error setting up hit-test source:", error);
+            setArMessage("Error configurando detección de superficies: " + error);
+            // Considerar terminar la sesión si el hit-test es crucial y falla
+            // session.end().catch(console.error);
         }
     }, [handleSessionEnd, xrStore]);
 
-    // CORRECCIÓN: Esta función se llama DESDE EL BOTÓN "Iniciar Experiencia AR"
-    const requestAndStartARSession = useCallback(async () => {
+    const onClickInitiateARSession = useCallback(async () => {
         if (!currentQrData || activeXrSession || isARSupported !== true) {
-            console.warn("requestAndStartARSession: Pre-conditions not met.", { currentQrData, activeXrSession, isARSupported });
+            console.warn("onClickInitiateARSession: Pre-conditions not met.", { currentQrData, activeXrSession, isARSupported });
+            setArMessage("No se puede iniciar AR. Escanea un QR primero o verifica el soporte AR.");
             return;
         }
+
+        setArMessage("Solicitando sesión AR...");
+        setShowArButton(false);
+
         try {
             setArMessage("Solicitando sesión AR...");
             setShowArButton(false); // Ocultar botón mientras se intenta iniciar
@@ -278,15 +316,13 @@ function JugarContent() {
             if (session) {
                 await handleSessionStart(session);
             } else {
-                // Esto no debería pasar si requestSession no lanza error, pero por si acaso
-                setArMessage("No se pudo obtener la sesión AR.");
-                setShowArButton(true); // Mostrar botón para reintentar
+                setArMessage("No se pudo obtener la sesión AR. Intenta de nuevo.");
+                setShowArButton(true);
             }
         } catch (err) {
             console.error("Error requesting AR session manually:", err);
             setArMessage(`No se pudo iniciar la sesión AR: ${err instanceof Error ? err.message : String(err)}`);
-            setShowArButton(true); // Mostrar botón para reintentar
-            // No limpiar currentQrData aquí para que el botón "Iniciar AR" siga siendo relevante
+            setShowArButton(true);
         }
     }, [currentQrData, activeXrSession, isARSupported, handleSessionStart]);
 
@@ -314,6 +350,7 @@ function JugarContent() {
         router.push(`/trivia?qrCodeData=${encodeURIComponent(tappedObjectData.qrData)}`);
     };
 
+    // --- Renderizado Principal ---
     return (
         <div className="relative w-screen h-screen overflow-hidden bg-gray-900 text-white select-none flex flex-col">
             <header className="w-full z-20 p-3 flex justify-between items-center bg-gradient-to-b from-black/70 to-transparent shrink-0">
@@ -341,8 +378,7 @@ function JugarContent() {
                                 {showArButton && currentQrData && !activeXrSession && (
                                     <div className="mt-6 flex flex-col items-center gap-4">
                                         <p className="text-green-400">{arMessage}</p>
-                                        {/* CORRECCIÓN: El botón llama a requestAndStartARSession */}
-                                        <Button onClick={requestAndStartARSession} variant="primary" size="lg" className="shadow-lg px-8 py-3">
+                                        <Button onClick={onClickInitiateARSession} variant="primary" size="lg" className="shadow-lg px-8 py-3">
                                             Iniciar Experiencia AR
                                         </Button>
                                         <Button onClick={startScanning} variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
@@ -350,11 +386,15 @@ function JugarContent() {
                                         </Button>
                                     </div>
                                 )}
+                                {currentQrData && !activeXrSession && !showArButton && (
+                                    <p className="mt-4 text-blue-400 animate-pulse">{arMessage}</p>
+                                )}
                             </>
                         )}
                     </div>
                 )}
 
+                {/* Contenido AR (Canvas y Mensaje Flotante) */}
                 {activeXrSession && isARSupported === true && (
                     <>
                         <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-20 p-3 bg-black bg-opacity-75 rounded-lg shadow-lg max-w-[90%]">
