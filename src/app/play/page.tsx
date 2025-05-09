@@ -11,6 +11,7 @@ import { Canvas, useThree, useFrame, ThreeEvent } from '@react-three/fiber';
 import { Svg } from '@react-three/drei';
 import * as THREE from 'three';
 import { XR, useXR, createXRStore } from '@react-three/xr';
+import Script from "next/script";
 
 // --- Interfaces ---
 interface PlacedObjectData {
@@ -352,6 +353,9 @@ function JugarContent() {
 
     // --- Renderizado Principal ---
     return (
+        <>
+            <Script src="https://cdn.jsdelivr.net/npm/eruda" strategy="beforeInteractive" />
+            <Script id={"eruda"}>eruda.init();</Script>
         <div className="relative w-screen h-screen overflow-hidden bg-gray-900 text-white select-none flex flex-col">
             <header className="w-full z-20 p-3 flex justify-between items-center bg-gradient-to-b from-black/70 to-transparent shrink-0">
                 <h1 className="text-lg sm:text-xl font-semibold">BAC Trivia - {activeXrSession ? "Modo AR" : "Modo Escaneo"}</h1>
@@ -415,6 +419,7 @@ function JugarContent() {
                 )}
             </main>
         </div>
+        </>
     );
 }
 
