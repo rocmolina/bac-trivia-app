@@ -89,33 +89,47 @@ const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedOb
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     useFrame((state) => {
         const xrFrame = gl.xr.getFrame?.();
-        if (!reticleRef.current) return;
+        if (!reticleRef.current) {
+            console.log("reticleRef.current is invalid, just return")
+            return;
+        }
 
         if (!isPresenting || !xrFrame) {
+            console.log("isPresenting or xrFrame are invalid. Turning reticleRef.current.visible off")
             reticleRef.current.visible = false;
             return;
         }
 
         if (!activeHitTestSourceFromParent) {
+            console.log("activeHitTestSourceFromParent is invalid. Turning reticleRef.current.visible off")
             reticleRef.current.visible = false;
             return;
         }
 
         const hitTestResults = xrFrame.getHitTestResults(activeHitTestSourceFromParent);
+        console.log("hitTestResults.length is ", hitTestResults.length);
         if (hitTestResults.length > 0) {
             const hit = hitTestResults[0];
             const currentReferenceSpace = gl.xr.getReferenceSpace();
             if (currentReferenceSpace) {
+                console.log("Processing a valid currentReferenceSpace...");
                 const hitPose = hit.getPose(currentReferenceSpace);
                 if (hitPose) {
+                    console.log("Processing a valid hitPose ...")
                     reticleRef.current.visible = true;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     reticleRef.current.position.copy(hitPose.transform.position as any);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     reticleRef.current.quaternion.copy(hitPose.transform.orientation as any);
                     return;
+                } else {
+                    console.log("hitPose is invalid.");
                 }
+            } else {
+                console.log("currentReferenceSpace is invalid.");
             }
+        } else {
+            console.log("hitTestResults.length must be greater than zero.");
         }
 
         reticleRef.current.visible = false;
@@ -123,13 +137,18 @@ const ARContentScene: React.FC<ARContentSceneProps> = ({ onPlaceObject, placedOb
 
     useEffect(() => {
         const currentSession = session;
-        if (!currentSession) return;
+        if (!currentSession) {
+            console.log("currentSession is invalid.");
+            return;
+        }
         const handleSelect = () => {
             if (reticleRef.current?.visible) {
                 onPlaceObject({
                     position: reticleRef.current.position.toArray() as THREE.Vector3Tuple,
                     quaternion: reticleRef.current.quaternion.toArray() as THREE.QuaternionTuple,
                 });
+            } else {
+                console.log("reticleRef.current?.visible is false.");
             }
         };
         currentSession.addEventListener('select', handleSelect);
@@ -276,6 +295,7 @@ function JugarContent() {
             console.log("JugarContent: Viewer space obtained:", viewerSpace);
             console.log("JugarContent: Requesting hit-test source...");
             const newHitTestSource = await session.requestHitTestSource?.({ space: viewerSpace });
+            console.log("JugarContent: hit-test source obtained:", newHitTestSource);
 
             if (newHitTestSource) {
                 setManualHitTestSource(newHitTestSource); // Guardar para pasarlo a ARContentScene
