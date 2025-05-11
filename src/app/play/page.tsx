@@ -134,8 +134,10 @@ function PlayPageContent() {
 
         try {
             const session = await navigator.xr.requestSession('immersive-ar', {
-                requiredFeatures: ['hit-test', 'dom-overlay'],
-                domOverlay: { root: arDomOverlayRef.current }
+                // requiredFeatures: ['hit-test', 'dom-overlay'],
+                optionalFeatures: ['hit-test', 'local-floor', 'viewer', 'dom-overlay'], // Hacer hit-test opcional para prueba
+                requiredFeatures: ['dom-overlay'], // Mínimo para ver si la sesión base funciona
+                domOverlay: { root: arDomOverlayRef.current! }
             });
             setARSession(session);
             setShowScanDataAndAROption(false); // Ocultar el botón de iniciar AR
