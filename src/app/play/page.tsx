@@ -116,7 +116,7 @@ function PlayPageContent() {
                 // 'local-floor' y 'viewer' son tipos de reference space, no features directas de sesión,
                 // pero 'hit-test' depende de que el sistema pueda proveerlos.
                 // ARButton.js de Three a menudo añade 'local-floor' a optionalFeatures.
-                optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'plane-detection'], // Ser más permisivo
+                optionalFeatures: ['local', 'viewer', 'local-floor'], // Ser más permisivo
                 // domOverlay es requerido para el botón de salir y otros elementos UI en AR.
                 domOverlay: { root: arDomOverlayRef.current }
             });
