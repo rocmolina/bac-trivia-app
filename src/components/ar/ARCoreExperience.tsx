@@ -79,63 +79,92 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
 
     const [placedObjects, setPlacedObjects] = useState<{id: string, matrix: THREE.Matrix4, qrData: string}[]>([]);
     const animationFrameIdRef = useRef<number | null>(null);
+    const isSessionActiveRef = useRef(false); // Para rastrear el estado de la sesión XR en el renderer
 
     // 1. Configurar el renderer para la sesión XR
     useEffect(() => {
         const currentSession = activeSession;
         let endedGracefully = false;
+        isSessionActiveRef.current = false;
 
-        gl.xr.enabled = true; // Asegurar que XR esté habilitado en el renderer
 
-        gl.xr.setSession(currentSession)
-            .then(() => {
+        console.log("ARCoreExperience: Preparando para configurar sesión en renderer.");
+        gl.xr.enabled = true;
+
+        // **** INTENTO DE CORRECCIÓN PRINCIPAL ****
+        // Establecer el tipo de espacio de referencia ANTES de setSession,
+        // si la sesión lo soporta (lo cual vimos que sí en enabledFeatures)
+        // Esta es la parte más delicada. El WebXRManager de Three.js tiene su propia lógica.
+        // Si 'local-floor' está en enabledFeatures, el WebXRManager debería poder usarlo.
+        // El error sugiere que cuando setSession LO INTENTA, falla.
+        // No hay una forma directa de "decirle" a setSession qué referenceSpace usar si no es
+        // a través de `setReferenceSpaceType` ANTES, o confiando en su default.
+        // Lo que haremos es NO llamar a setReferenceSpaceType y confiar en el default de setSession,
+        // PERO asegurar que la sesión que pasamos esté lo más "limpia" y correctamente configurada posible.
+        // El error que vimos indica que el problema es cuando `setSession` internamente llama a `requestReferenceSpace`.
+
+        const setupSession = async () => {
+            try {
+                // No llamamos a gl.xr.setReferenceSpaceType() aquí.
+                // Dejamos que setSession intente usar 'local-floor' o 'bounded-floor'
+                // que están en `enabledFeatures`.
+                await gl.xr.setSession(currentSession);
                 if (endedGracefully) return;
-                console.log("ARCoreExperience: Sesión XR establecida en renderer.");
+
+                console.log("ARCoreExperience: Sesión XR establecida en renderer exitosamente.");
+                isSessionActiveRef.current = true;
+
                 const currentRefSpace = gl.xr.getReferenceSpace();
                 if (!currentRefSpace) {
-                    console.error("ARCoreExperience: gl.xr.getReferenceSpace() es null DESPUÉS de setSession. Saliendo.");
+                    console.error("ARCoreExperience: gl.xr.getReferenceSpace() es null DESPUÉS de setSession. ¡Esto no debería pasar si setSession tuvo éxito! Saliendo.");
                     onExit();
                     return;
                 }
-                console.log("ARCoreExperience: Espacio de referencia del renderer obtenido post-setSession.");
-            })
-            .catch(err => {
+                console.log("ARCoreExperience: Espacio de referencia del renderer post-setSession obtenido.");
+                // El tipo exacto se puede inspeccionar en el objeto currentRefSpace si es necesario,
+                // pero el hecho de que exista es lo importante.
+
+            } catch (err) {
                 if (endedGracefully) return;
-                console.error("ARCoreExperience: Error FATAL al llamar a gl.xr.setSession:", err);
+                console.error("ARCoreExperience: Error FATAL al llamar a gl.xr.setSession(currentSession):", err);
                 onExit();
-            });
+            }
+        };
+
+        setupSession();
 
         const onSessionEndCleanup = () => {
             if (endedGracefully) return;
             endedGracefully = true;
+            isSessionActiveRef.current = false;
             console.log("ARCoreExperience: Limpiando por evento 'end' de la sesión.");
+            // Cancelar el bucle de animación si está activo
             if (animationFrameIdRef.current !== null) {
                 if (currentSession && typeof currentSession.cancelAnimationFrame === 'function') {
-                    try { currentSession.cancelAnimationFrame(animationFrameIdRef.current); } catch(e) { console.warn("ARCoreExperience: Error cancelando animationFrame:", e); }
+                    try { currentSession.cancelAnimationFrame(animationFrameIdRef.current); } catch(e) { console.warn("ARCoreExperience: Error cancelando animationFrameIdRef:", e); }
                 }
                 animationFrameIdRef.current = null;
             }
+            // Cancelar el hit test source si existe
             if (hitTestSourceRef.current && typeof hitTestSourceRef.current.cancel === 'function') {
                 hitTestSourceRef.current.cancel();
             }
             hitTestSourceRef.current = null;
-            setHitTestSourceRequested(false);
-            // Solo intentar desvincular la sesión del renderer si todavía es la activa
+            setHitTestSourceRequested(false); // Permitir re-solicitar si se reingresa
+
+            // Desvincular la sesión del renderer
             if (gl.xr.getSession() === currentSession) {
-                gl.xr.setSession(null).catch(console.warn);
+                gl.xr.setSession(null).catch(e => console.warn("ARCoreExperience: Advertencia al limpiar sesión del renderer:", e));
             }
-            onExit();
+            onExit(); // Notificar a la página padre
         };
         currentSession.addEventListener('end', onSessionEndCleanup);
 
         return () => {
+            console.log("ARCoreExperience: Desmontando ARScene. endedGracefully:", endedGracefully);
             currentSession.removeEventListener('end', onSessionEndCleanup);
-            if (!endedGracefully && gl.xr.getSession() === currentSession) {
-                if (hitTestSourceRef.current && typeof hitTestSourceRef.current.cancel === 'function') {
-                    hitTestSourceRef.current.cancel();
-                    hitTestSourceRef.current = null;
-                }
-                gl.xr.setSession(null).catch(console.warn);
+            if (!endedGracefully) { // Si el componente se desmonta antes de que 'end' se dispare
+                onSessionEndCleanup(); // Ejecutar la limpieza manualmente
             }
         };
     }, [activeSession, gl.xr, onExit]);
@@ -143,13 +172,10 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
 
     // 2. Solicitar Hit Test Source
     useEffect(() => {
-        // Solo solicitar si la sesión XR está activa en el renderer (gl.xr.isPresenting)
-        // y si tenemos una sesión activa y aún no se ha solicitado/obtenido el hitTestSource.
-        if (gl.xr.isPresenting && activeSession && !hitTestSourceRef.current && !hitTestSourceRequested) {
+        if (isSessionActiveRef.current && activeSession && !hitTestSourceRef.current && !hitTestSourceRequested) {
             const requestSource = async () => {
-                setHitTestSourceRequested(true); // Marcar como solicitado para evitar múltiples intentos
+                setHitTestSourceRequested(true);
                 try {
-                    // 'viewer' es para el origen del rayo, desde la perspectiva del dispositivo.
                     const viewerReferenceSpace = await activeSession.requestReferenceSpace('viewer');
                     console.log("ARCoreExperience: 'viewer' reference space obtenido para hit-test source.");
 
@@ -160,47 +186,42 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
                             console.log("ARCoreExperience: Hit test source ('viewer') obtenido y almacenado.");
                         } else {
                             console.warn("ARCoreExperience: requestHitTestSource con 'viewer' resolvió a undefined.");
-                            // No llamar a onExit aquí, podría ser recuperable o el hit-test no es estrictamente fatal para la sesión base
+                            setHitTestSourceRequested(false); // Permitir re-intento
                         }
                     } else {
                         console.error("ARCoreExperience: activeSession.requestHitTestSource no es una función.");
+                        setHitTestSourceRequested(false);
                     }
                 } catch (error) {
                     console.error("ARCoreExperience: Error al obtener hit test source con 'viewer':", error);
-                    // Si esto falla, el hit-testing no funcionará. Podríamos notificar al usuario o salir.
-                    // onExit(); // Considerar si esto debe ser fatal
+                    // Si 'viewer' falla, es un problema con las features habilitadas o el soporte del dispositivo.
+                    // Tu log de `enabledFeatures` incluía 'viewer', así que esto debería funcionar.
+                    setHitTestSourceRequested(false);
                 }
             };
             requestSource();
-        } else if (!gl.xr.isPresenting && hitTestSourceRef.current) {
-            // Si salimos de AR, limpiar el hitTestSource
-            if (typeof hitTestSourceRef.current.cancel === 'function') {
-                hitTestSourceRef.current.cancel();
-            }
-            hitTestSourceRef.current = null;
-            setHitTestSourceRequested(false);
         }
-    }, [gl.xr.isPresenting, activeSession, hitTestSourceRequested]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isSessionActiveRef.current, activeSession, hitTestSourceRequested]); // Usar isSessionActiveRef
 
 
     // 3. Bucle de renderizado (requestAnimationFrame)
     useEffect(() => {
-        const currentSession = activeSession;
-        if (!gl.xr.isPresenting || !currentSession ) {
+        const currentSession = activeSession; // Capturar para el closure
+        if (!isSessionActiveRef.current || !currentSession) {
             setIsReticleVisible(false);
             return;
         }
 
         const onXRFrame = (time: DOMHighResTimeStamp, frame: XRFrame) => {
-            animationFrameIdRef.current = currentSession.requestAnimationFrame(onXRFrame);
+            animationFrameIdRef.current = currentSession.requestAnimationFrame(onXRFrame); // Solicitar el siguiente frame
 
             if (!hitTestSourceRef.current) {
                 setIsReticleVisible(false);
                 return;
             }
 
-            // Este es el espacio de referencia principal de la sesión AR (debería ser 'local-floor' o similar)
-            const referenceSpace = gl.xr.getReferenceSpace();
+            const referenceSpace = gl.xr.getReferenceSpace(); // Este debería ser el 'local-floor'
             if (!referenceSpace) {
                 setIsReticleVisible(false);
                 return;
@@ -209,7 +230,6 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
             const hitTestResults = frame.getHitTestResults(hitTestSourceRef.current);
             if (hitTestResults.length > 0) {
                 const hit = hitTestResults[0];
-                // La pose del hit debe obtenerse relativa al referenceSpace de la sesión principal
                 const pose = hit.getPose(referenceSpace);
                 if (pose) {
                     if (!reticleMatrixRef.current) reticleMatrixRef.current = new THREE.Matrix4();
@@ -228,34 +248,44 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
         return () => {
             if (animationFrameIdRef.current !== null) {
                 if (currentSession && typeof currentSession.cancelAnimationFrame === 'function') {
-                    try { currentSession.cancelAnimationFrame(animationFrameIdRef.current); } catch (e) { console.warn("ARCoreExperience: Error cancelando animationFrame:", e); }
+                    try { currentSession.cancelAnimationFrame(animationFrameIdRef.current); } catch (e) { console.warn("ARCoreExperience: Error cancelando animationFrameIdRef:", e); }
                 }
                 animationFrameIdRef.current = null;
             }
         };
-    }, [gl.xr, activeSession, hitTestSourceRequested]); // Re-ejecutar si cambia estado de presentación o la sesión o si se solicita de nuevo el hitTestSource
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [gl.xr, activeSession, hitTestSourceRef.current]); // Re-ejecutar si hitTestSourceRef.current cambia
+
 
     // 4. Manejar evento 'select'
     const handlePlaceObject = useCallback(() => {
-        if (isReticleVisible && reticleMatrixRef.current && gl.xr.isPresenting) {
+        if (isReticleVisible && reticleMatrixRef.current && isSessionActiveRef.current) {
             const newId = THREE.MathUtils.generateUUID();
             setPlacedObjects(prev => [...prev, {
                 id: newId,
                 matrix: reticleMatrixRef.current!.clone(),
                 qrData: qrCodeData,
             }]);
+            console.log(`ARCoreExperience: Objeto colocado ID: ${newId}`);
         }
-    }, [isReticleVisible, qrCodeData, gl.xr.isPresenting]);
+    }, [isReticleVisible, qrCodeData]);
 
     useEffect(() => {
         const currentSession = activeSession;
-        if (currentSession && gl.xr.isPresenting) {
+        if (currentSession && isSessionActiveRef.current) {
             currentSession.addEventListener('select', handlePlaceObject);
             return () => {
                 currentSession.removeEventListener('select', handlePlaceObject);
             };
         }
-    }, [activeSession, handlePlaceObject, gl.xr.isPresenting]);
+    }, [activeSession, handlePlaceObject]); // Ya no depende de gl.xr.isPresenting, sino de isSessionActiveRef
+
+    // Renderizado de la escena
+    if (!isSessionActiveRef.current) {
+        // No renderizar nada o un loader si la sesión no está activa en el renderer.
+        // Esto ayuda a evitar que Three.js intente renderizar antes de que XR esté listo.
+        return null;
+    }
 
     return (
         <>
@@ -268,8 +298,10 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
                     matrix={obj.matrix}
                     onSelect={() => {
                         router.push(`/trivia?qrCodeData=${encodeURIComponent(obj.qrData)}`);
-                        // Considerar si se debe salir de AR después de la selección
-                        // activeSession.end().catch(console.warn); // O llamar a onExit()
+                        // Considerar terminar la sesión AR aquí para una mejor UX
+                        // if (activeSession && activeSession.ended === false) {
+                        //   activeSession.end().catch(console.warn);
+                        // }
                     }}
                 />
             ))}
@@ -285,8 +317,10 @@ interface ARCoreExperienceProps {
 const ARCoreExperience: React.FC<ARCoreExperienceProps> = ({ activeSession, qrCodeData, onExit }) => {
     return (
         <Canvas
-            gl={{ antialias: true, alpha: true }}
+            gl={{ antialias: true, alpha: true }} // alpha: true es crucial
             style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1 }}
+            // La cámara y el bucle de renderizado son manejados por el WebXRManager de Three.js
+            // cuando una sesión XR está activa.
         >
             <ARScene activeSession={activeSession} qrCodeData={qrCodeData} onExit={onExit} />
         </Canvas>
