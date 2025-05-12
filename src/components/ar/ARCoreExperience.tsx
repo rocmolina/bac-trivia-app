@@ -10,20 +10,18 @@ interface ReticleProps {
     matrix: THREE.Matrix4 | null;
 }
 const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
-    const reticleRef = useRef<THREE.Mesh>(null);
+    const ref = useRef<THREE.Mesh>(null);
 
     useEffect(() => {
-        if (reticleRef.current && visible && matrix) {
-            reticleRef.current.matrixAutoUpdate = false;
-            reticleRef.current.visible = true;
-            reticleRef.current.matrix.copy(matrix);
-        } else if (reticleRef.current) {
-            reticleRef.current.visible = false;
+        if (ref.current && matrix) {
+            ref.current.visible = visible;
+            ref.current.matrixAutoUpdate = false;
+            ref.current.matrix.copy(matrix);
         }
     }, [visible, matrix]);
 
     return (
-        <mesh ref={reticleRef} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh ref={ref} visible={visible} matrixAutoUpdate={false}>
             <ringGeometry args={[0.15, 0.2, 32]} />
             <meshBasicMaterial color="lime" opacity={0.95} />
         </mesh>
@@ -35,12 +33,12 @@ interface PlacedObjectProps {
     onSelect: () => void;
 }
 const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelect }) => {
-    const meshRef = useRef<THREE.Mesh>(null!);
-    const [isHovered, setIsHovered] = useState(false);
+    const meshRef = useRef<THREE.Mesh>(null);
+    const [hovered, setHovered] = useState(false);
     const [initialColor] = useState(() => new THREE.Color().setHex(Math.random() * 0xffffff));
 
     useEffect(() => {
-        if (meshRef.current && matrix) {
+        if (meshRef.current) {
             meshRef.current.matrixAutoUpdate = false;
             meshRef.current.matrix.copy(matrix);
         }
@@ -49,16 +47,14 @@ const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelect }) => {
     return (
         <mesh
             ref={meshRef}
-            onClick={(event) => {
-                event.stopPropagation();
-                onSelect();
-            }}
-            onPointerOver={(e) => { e.stopPropagation(); setIsHovered(true); }}
-            onPointerOut={(e) => { e.stopPropagation(); setIsHovered(false); }}
-            scale={isHovered ? 1.25 : 1}
+            matrixAutoUpdate={false}
+            onClick={(e) => { e.stopPropagation(); onSelect(); }}
+            onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+            onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
+            scale={hovered ? 1.25 : 1}
         >
             <boxGeometry args={[0.15, 0.15, 0.15]} />
-            <meshStandardMaterial roughness={0.5} metalness={0.3} color={isHovered ? 0xff00ff : initialColor} />
+            <meshStandardMaterial color={hovered ? 0xff00ff : initialColor} />
         </mesh>
     );
 };
@@ -70,13 +66,12 @@ interface ARSceneProps {
 }
 const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) => {
     const router = useRouter();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { gl, scene, camera } = useThree();
+    const { gl } = useThree();
     const [hitTestSource, setHitTestSource] = useState<XRHitTestSource | null>(null);
     const [referenceSpace, setReferenceSpace] = useState<XRReferenceSpace | null>(null);
-    const reticleMatrixRef = useRef<THREE.Matrix4>(new THREE.Matrix4());
+    const reticleMatrix = useRef(new THREE.Matrix4());
     const [reticleVisible, setReticleVisible] = useState(false);
-    const [placedObjects, setPlacedObjects] = useState<{ id: string; matrix: THREE.Matrix4; qrData: string }[]>([]);
+    const [objects, setObjects] = useState<{ id: string; matrix: THREE.Matrix4; qrData: string }[]>([]);
 
     useEffect(() => {
         gl.xr.enabled = true;
@@ -96,38 +91,32 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
     }, [activeSession, gl, onExit]);
 
     useEffect(() => {
-        const setupHitTest = async () => {
+        const setup = async () => {
             try {
                 const viewerSpace = await activeSession.requestReferenceSpace('viewer');
+                const localSpace = await activeSession.requestReferenceSpace('local');
                 if (typeof activeSession.requestHitTestSource === 'function') {
                     const source = await activeSession.requestHitTestSource({ space: viewerSpace });
-                    const localRefSpace = await activeSession.requestReferenceSpace('local');
                     if (source) setHitTestSource(source);
-                    else console.warn('Failed to set up hit test source. It is undefined.');
-                    setReferenceSpace(localRefSpace);
+                    else console.error('No hit test source available.');
+                    setReferenceSpace(localSpace);
                 }
             } catch (err) {
-                console.error('Failed to set up hit test source:', err);
+                console.error('HitTest error:', err);
             }
         };
-        setupHitTest();
+        setup();
     }, [activeSession]);
 
-    useFrame((state) => {
-        const frame = state.gl.xr.getFrame();
+    useFrame(({ gl }) => {
+        const frame = gl.xr.getFrame();
         if (!frame || !referenceSpace || !hitTestSource) return;
-
-        const hitTestResults = frame.getHitTestResults(hitTestSource);
-        if (hitTestResults.length > 0) {
-            const hit = hitTestResults[0];
+        const results = frame.getHitTestResults(hitTestSource);
+        if (results.length > 0) {
+            const hit = results[0];
             const pose = hit.getPose(referenceSpace);
             if (pose) {
-                const position = new THREE.Vector3();
-                const rotation = new THREE.Quaternion();
-                const scale = new THREE.Vector3();
-                const mat = new THREE.Matrix4().fromArray(pose.transform.matrix);
-                mat.decompose(position, rotation, scale);
-                reticleMatrixRef.current.compose(position, rotation, scale);
+                reticleMatrix.current.fromArray(pose.transform.matrix);
                 setReticleVisible(true);
                 return;
             }
@@ -135,34 +124,31 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
         setReticleVisible(false);
     });
 
-    const handlePlaceObject = useCallback(() => {
+    const placeObject = useCallback(() => {
         if (reticleVisible) {
-            const matrix = reticleMatrixRef.current.clone();
-            setPlacedObjects(prev => [
+            setObjects((prev) => [
                 ...prev,
-                { id: THREE.MathUtils.generateUUID(), matrix, qrData: qrCodeData },
+                { id: THREE.MathUtils.generateUUID(), matrix: reticleMatrix.current.clone(), qrData: qrCodeData },
             ]);
         }
     }, [reticleVisible, qrCodeData]);
 
     useEffect(() => {
-        activeSession.addEventListener('select', handlePlaceObject);
-        return () => activeSession.removeEventListener('select', handlePlaceObject);
-    }, [activeSession, handlePlaceObject]);
+        activeSession.addEventListener('select', placeObject);
+        return () => activeSession.removeEventListener('select', placeObject);
+    }, [activeSession, placeObject]);
 
     return (
         <>
             <ambientLight intensity={1.0} />
             <directionalLight position={[1, 4, 2.5]} intensity={1.2} />
-            <group matrix={reticleMatrixRef.current} matrixAutoUpdate={false}>
-                <Reticle visible={reticleVisible} matrix={reticleMatrixRef.current} />
+            <group matrix={reticleMatrix.current} matrixAutoUpdate={false}>
+                <Reticle visible={reticleVisible} matrix={reticleMatrix.current} />
             </group>
-            {placedObjects.map(obj => (
-                <PlacedObject
-                    key={obj.id}
-                    matrix={obj.matrix}
-                    onSelect={() => router.push(`/trivia?qrCodeData=${encodeURIComponent(obj.qrData)}`)}
-                />
+            {objects.map((obj) => (
+                <group key={obj.id} matrix={obj.matrix} matrixAutoUpdate={false}>
+                    <PlacedObject matrix={obj.matrix} onSelect={() => router.push(`/trivia?qrCodeData=${encodeURIComponent(obj.qrData)}`)} />
+                </group>
             ))}
         </>
     );
