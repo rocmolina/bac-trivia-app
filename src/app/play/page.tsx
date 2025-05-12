@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import useUserStore from '@/lib/store/userStore';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeSupportedFormats, Html5QrcodeResult } from 'html5-qrcode';
-import ARCoreExperience from '@/components/ar/ARCoreExperience';
+import ARCoreExperience from '@/components/ar/ARCoreExperience'; // Asegúrate que la ruta sea correcta
 
+// Iconos (sin cambios)
 const UserCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
         <path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clipRule="evenodd" />
@@ -27,7 +27,7 @@ function PlayPageContent() {
     const router = useRouter();
     const user = useUserStore((state) => state);
 
-    const [scannedData, setScannedData] = useState<string | null>(null);
+    const [scannedData, setScannedData] = useState<string | null>(null); // qrCodeData del tótem
     const [arSession, setARSession] = useState<XRSession | null>(null);
     const [arError, setArError] = useState<string | null>(null);
     const [showScanDataAndAROption, setShowScanDataAndAROption] = useState(false);
@@ -35,7 +35,7 @@ function PlayPageContent() {
 
     const qrcodeRegionId = "bac-qr-scanner-region";
     const html5QrCodeScannerRef = useRef<Html5QrcodeScanner | null>(null);
-    const arDomOverlayRef = useRef<HTMLDivElement>(null);
+    const arDomOverlayRef = useRef<HTMLDivElement>(null); // Para el botón de "Salir de AR"
 
     const stopScanner = useCallback(() => {
         if (html5QrCodeScannerRef.current) {
@@ -44,7 +44,6 @@ function PlayPageContent() {
             } catch (e) { console.warn("Excepción al limpiar el escáner:", e); }
             html5QrCodeScannerRef.current = null;
         }
-        // No cambiar shouldRenderScannerContainer aquí directamente
     }, []);
 
     useEffect(() => {
@@ -63,15 +62,17 @@ function PlayPageContent() {
                 },false );
                 scannerInstance.render(
                     (decodedText) => {
+                        console.log("PlayPage: QR Scaneado:", decodedText);
                         setScannedData(decodedText);
                         setShowScanDataAndAROption(true);
-                        setShouldRenderScannerContainer(false);
+                        setShouldRenderScannerContainer(false); // Ocultar el scanner
                         stopScanner();
                     },
-                    () => {} // Error callback (ignorado)
+                    (errorMessage) => {
+                        // console.warn("PlayPage: Error de escaner QR (puede ignorarse si es solo 'no QR found'):", errorMessage);
+                    }
                 );
                 html5QrCodeScannerRef.current = scannerInstance;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (error: any) {
                 setArError(`Error del escáner QR: ${error.message || error.toString()}`);
                 setShouldRenderScannerContainer(false);
@@ -82,85 +83,101 @@ function PlayPageContent() {
     useEffect(() => {
         return () => {
             stopScanner();
-            if (arSession) { // && arSession.ended === false) {
-                arSession.end().catch(console.warn);
+            if (arSession) { // && arSession.ended === false) { // Verificar si la sesión no ha terminado ya
+                console.log("PlayPage: Desmontando, intentando terminar sesión AR activa.");
+                arSession.end().catch(err => console.warn("PlayPage: Error al terminar sesión AR en desmontaje:", err));
             }
         };
     }, [stopScanner, arSession]);
 
     const handleScanButtonClick = () => {
         setScannedData(null);
-        if (arSession) {
-            arSession.end().catch(console.warn);
-            setARSession(null);
+        if (arSession) { // && arSession.ended === false) {
+            arSession.end().catch(err => console.warn("PlayPage: Error al terminar sesión AR para nuevo escaneo:", err));
+            // El listener 'end' de la sesión debería encargarse de setARSession(null)
+        } else {
+            setARSession(null); // Asegurarse que se limpia si no había sesión o ya había terminado
         }
         setShowScanDataAndAROption(false);
         setArError(null);
-        setShouldRenderScannerContainer(true);
+        setShouldRenderScannerContainer(true); // Mostrar el scanner
     };
 
     const handleEnterAR = async () => {
+        if (!scannedData) {
+            setArError("No hay datos de QR escaneados para iniciar AR.");
+            return;
+        }
         if (!navigator.xr) {
             setArError("WebXR no es compatible con este navegador.");
             return;
         }
         if (!arDomOverlayRef.current) {
-            setArError("Elemento DOM Overlay para AR no encontrado.");
+            setArError("Elemento DOM Overlay para AR no encontrado. (arDomOverlayRef)");
             return;
         }
 
         try {
-            console.log("PlayPage: Solicitando sesión AR con features...");
+            console.log("PlayPage: Solicitando sesión AR immersive-ar...");
             const session = await navigator.xr.requestSession('immersive-ar', {
-                requiredFeatures: ['dom-overlay', 'hit-test'], // 'hit-test' es crucial.
-                // 'local-floor' y 'viewer' son tipos de reference space, no features directas de sesión,
-                // pero 'hit-test' depende de que el sistema pueda proveerlos.
-                // ARButton.js de Three a menudo añade 'local-floor' a optionalFeatures.
-                optionalFeatures: ['local', 'viewer', 'local-floor'], // Ser más permisivo
-                // domOverlay es requerido para el botón de salir y otros elementos UI en AR.
-                domOverlay: { root: arDomOverlayRef.current }
+                requiredFeatures: ['dom-overlay', 'hit-test'],
+                optionalFeatures: ['local', 'local-floor', 'viewer'], // local-floor es ideal
+                domOverlay: { root: arDomOverlayRef.current } // Para el botón "Salir de AR"
             });
 
             console.log("PlayPage: Sesión AR obtenida:", session);
-            setARSession(session);
-            setShowScanDataAndAROption(false);
+            setARSession(session); // Esto disparará el renderizado de ARCoreExperience
+            setShowScanDataAndAROption(false); // Ocultar opciones de escaneo/inicio AR
             setShouldRenderScannerContainer(false); // Asegurar que el scanner no esté visible
             setArError(null);
 
             session.addEventListener('end', () => {
-                console.log("PlayPage: Sesión AR terminada (evento 'end' en play/page).");
+                console.log("PlayPage: Sesión AR terminada (evento 'end' recibido en play/page).");
                 setARSession(null);
-                // Si teníamos datos escaneados previamente, volvemos a mostrar la opción de entrar a AR
-                if (scannedData) {
+                if (scannedData) { // Si teníamos datos, volvemos a mostrar la opción de (re)entrar
                     setShowScanDataAndAROption(true);
                 }
-                // No reiniciar el escáner automáticamente a menos que el usuario lo pida
+                // No reiniciar el escáner automáticamente
             });
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("PlayPage: Error al solicitar sesión AR:", error);
-            setArError(`No se pudo iniciar AR: ${error.message || error.toString()}. Verifica compatibilidad y permisos.`);
+            let message = error.message || error.toString();
+            if (error.name === "NotSupportedError") {
+                message = "Este dispositivo o navegador no soporta la sesión AR solicitada.";
+            } else if (error.name === "SecurityError") {
+                message = "Se denegó el permiso para acceder a la cámara o sensores para AR. Asegúrate que la página se sirve por HTTPS.";
+            }
+            setArError(`No se pudo iniciar AR: ${message}`);
             setARSession(null);
-            setShowScanDataAndAROption(true); // Permitir al usuario reintentar si tenía datos
+            setShowScanDataAndAROption(true); // Permitir reintentar si tenía datos
         }
     };
 
-    const handleExitARRequest = useCallback(() => { // Renombrado para claridad
+    // Esta función es llamada por ARCoreExperience cuando el usuario quiere salir o la sesión termina internamente.
+    const handleExitARRequest = useCallback(() => {
+        console.log("PlayPage: handleExitARRequest llamado.");
         if (arSession) { // && arSession.ended === false) {
-            arSession.end().catch(e => console.warn("PlayPage: Error al llamar a session.end():", e));
-            // El listener 'end' de la sesión se encargará de setARSession(null) y actualizar UI.
+            console.log("PlayPage: Hay una sesión AR activa, intentando terminarla.");
+            arSession.end().catch(e => console.warn("PlayPage: Error al llamar a session.end() desde handleExitARRequest:", e));
+            // El listener 'end' de la sesión (configurado en handleEnterAR)
+            // se encargará de hacer setARSession(null) y actualizar la UI.
         } else {
-            // Si no hay sesión o ya terminó, solo actualizar UI para volver al estado de escaneo/opciones AR
-            setARSession(null);
+            console.log("PlayPage: No hay sesión AR activa o ya terminó. Solo actualizando UI.");
+            setARSession(null); // Asegurar que se limpia el estado
             if (scannedData) {
-                setShowScanDataAndAROption(true);
+                setShowScanDataAndAROption(true); // Volver a mostrar opciones si había un QR
             } else {
-                setShouldRenderScannerContainer(false); // Ocultar scanner si no hay datos y se "sale" de un estado no-AR
+                // Volver al estado inicial de pedir escanear
+                setShowScanDataAndAROption(false);
+                setShouldRenderScannerContainer(false);
             }
         }
     }, [arSession, scannedData]);
 
+
     if (!user.isAuthenticated || !user.firestoreId) {
+        // ... (sin cambios)
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
                 <p>Debes iniciar sesión para jugar.</p>
@@ -169,10 +186,9 @@ function PlayPageContent() {
         );
     }
 
-    // Botón superior derecho dinámico
     const TopRightButton = () => {
+        // ... (sin cambios)
         if (arSession) {
-            // No necesitamos este botón aquí si el overlay maneja el "Salir de AR"
             return null;
         }
         return (
@@ -193,23 +209,24 @@ function PlayPageContent() {
         <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-gray-100 relative">
             <TopRightButton />
 
+            {/* Contenedor para el overlay de DOM de WebXR (botón Salir de AR) */}
             <div
                 id="ar-dom-overlay-container"
                 ref={arDomOverlayRef}
                 style={{
                     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                    pointerEvents: arSession ? 'auto' : 'none',
-                    zIndex: arSession ? 30 : -1,
+                    pointerEvents: arSession ? 'auto' : 'none', // Solo interactuable si hay sesión AR
+                    zIndex: arSession ? 30 : -1, // Encima de todos, si hay sesión AR
                     display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', padding: '20px',
                 }}
             >
-                {arSession && (
+                {arSession && ( // Mostrar botón "Salir de AR" solo si hay sesión
                     <Button
-                        onClick={handleExitARRequest}
+                        onClick={handleExitARRequest} // Llama a la función para terminar la sesión
                         variant="secondary"
                         size="sm"
                         className="bg-white/90 hover:bg-white text-red-600 border-red-300 hover:border-red-500 flex items-center"
-                        style={{ pointerEvents: 'auto' }}
+                        style={{ pointerEvents: 'auto' }} // Asegurar que el botón sea clickeable
                     >
                         <XMarkIcon className="h-5 w-5 mr-1" />
                         Salir de AR
@@ -217,7 +234,7 @@ function PlayPageContent() {
                 )}
             </div>
 
-            {!arSession && (
+            {!arSession && ( // Mostrar UI de escaneo/opciones si NO hay sesión AR
                 <>
                     <h1 className="text-3xl font-bold text-red-700 mb-4 mt-12 sm:mt-0">BAC Trivia - ¡A Jugar!</h1>
 
@@ -245,14 +262,14 @@ function PlayPageContent() {
                             <p className="text-sm text-gray-500 mb-4">¿Listo para la Realidad Aumentada?</p>
 
                             <Button
-                                onClick={handleEnterAR}
+                                onClick={handleEnterAR} // Llama a la función para iniciar AR
                                 className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md text-lg w-full"
                             >
                                 Iniciar Experiencia AR
                             </Button>
 
                             <Button
-                                onClick={handleScanButtonClick}
+                                onClick={handleScanButtonClick} // Permite escanear otro QR
                                 variant="secondary"
                                 className="mt-3 w-full"
                             >
@@ -265,11 +282,12 @@ function PlayPageContent() {
                 </>
             )}
 
+            {/* Renderizar la experiencia AR solo si hay una sesión activa y datos escaneados */}
             {arSession && scannedData && (
                 <ARCoreExperience
                     activeSession={arSession}
-                    qrCodeData={scannedData}
-                    onExit={handleExitARRequest}
+                    qrCodeData={scannedData} // Pasar el QR escaneado a la experiencia AR
+                    onExit={handleExitARRequest} // Pasar la función para manejar la salida de AR
                 />
             )}
         </div>
