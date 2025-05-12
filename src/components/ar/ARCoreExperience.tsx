@@ -27,7 +27,7 @@ const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
     }, [visible, matrix]);
 
     return (
-        <mesh ref={reticleRef} matrixAutoUpdate={false} visible={false} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh ref={reticleRef} matrixAutoUpdate={false} visible={visible} rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry args={[0.05, 0.075, 32]} />
             <meshBasicMaterial color="white" transparent={false} opacity={0.85} depthTest={false} />
         </mesh>
@@ -194,7 +194,7 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
         const currentSession = activeSession;
         if (!gl.xr.isPresenting || !currentSession || !hitTestSource) { // Depender del estado hitTestSource
             if(isReticleVisible) setIsReticleVisible(false);
-            // console.log("ARScene: Bucle onXRFrame no iniciado (no present, no session, o no hitTestSource). HitTestSource:", !!hitTestSource);
+            console.log("ARScene: Bucle onXRFrame no iniciado (no present, no session, o no hitTestSource). HitTestSource:", !!hitTestSource);
             return;
         }
         console.log("ARScene: Bucle onXRFrame INICIADO. HitTestSource disponible.");
