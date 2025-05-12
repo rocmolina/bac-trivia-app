@@ -103,7 +103,7 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
                     const source = await activeSession.requestHitTestSource({ space: viewerSpace });
                     const localRefSpace = await activeSession.requestReferenceSpace('local');
                     if (source) setHitTestSource(source);
-                    else console.error('Failed to set up hit test source: XRHitTestSource is undefined');
+                    else console.warn('Failed to set up hit test source. It is undefined.');
                     setReferenceSpace(localRefSpace);
                 }
             } catch (err) {
@@ -122,7 +122,12 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
             const hit = hitTestResults[0];
             const pose = hit.getPose(referenceSpace);
             if (pose) {
-                reticleMatrixRef.current.fromArray(pose.transform.matrix);
+                const position = new THREE.Vector3();
+                const rotation = new THREE.Quaternion();
+                const scale = new THREE.Vector3();
+                const mat = new THREE.Matrix4().fromArray(pose.transform.matrix);
+                mat.decompose(position, rotation, scale);
+                reticleMatrixRef.current.compose(position, rotation, scale);
                 setReticleVisible(true);
                 return;
             }
@@ -149,7 +154,9 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
         <>
             <ambientLight intensity={1.0} />
             <directionalLight position={[1, 4, 2.5]} intensity={1.2} />
-            <Reticle visible={reticleVisible} matrix={reticleMatrixRef.current} />
+            <group matrix={reticleMatrixRef.current} matrixAutoUpdate={false}>
+                <Reticle visible={reticleVisible} matrix={reticleMatrixRef.current} />
+            </group>
             {placedObjects.map(obj => (
                 <PlacedObject
                     key={obj.id}
