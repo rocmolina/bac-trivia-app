@@ -24,8 +24,8 @@ const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
 
     return (
         <mesh ref={reticleRef} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[0.05, 0.075, 32]} />
-            <meshBasicMaterial color="white" opacity={0.85} />
+            <ringGeometry args={[0.15, 0.2, 32]} />
+            <meshBasicMaterial color="lime" opacity={0.95} />
         </mesh>
     );
 };
@@ -57,8 +57,8 @@ const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelect }) => {
             onPointerOut={(e) => { e.stopPropagation(); setIsHovered(false); }}
             scale={isHovered ? 1.25 : 1}
         >
-            <boxGeometry args={[0.1, 0.1, 0.1]} />
-            <meshStandardMaterial roughness={0.7} metalness={0.3} color={isHovered ? 0xff00ff : initialColor} />
+            <boxGeometry args={[0.15, 0.15, 0.15]} />
+            <meshStandardMaterial roughness={0.5} metalness={0.3} color={isHovered ? 0xff00ff : initialColor} />
         </mesh>
     );
 };
@@ -70,7 +70,8 @@ interface ARSceneProps {
 }
 const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) => {
     const router = useRouter();
-    const { gl } = useThree();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { gl, scene, camera } = useThree();
     const [hitTestSource, setHitTestSource] = useState<XRHitTestSource | null>(null);
     const [referenceSpace, setReferenceSpace] = useState<XRReferenceSpace | null>(null);
     const reticleMatrixRef = useRef<THREE.Matrix4>(new THREE.Matrix4());
@@ -99,18 +100,16 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
             try {
                 const viewerSpace = await activeSession.requestReferenceSpace('viewer');
                 if (typeof activeSession.requestHitTestSource === 'function') {
-                    const hitTestSource = await activeSession.requestHitTestSource({space: viewerSpace});
-                    setHitTestSource(hitTestSource ? hitTestSource : null);
-                } else {
-                    console.warn('XRSession.requestHitTestSource undefined. Potential issue from now on.');
+                    const source = await activeSession.requestHitTestSource({ space: viewerSpace });
+                    const localRefSpace = await activeSession.requestReferenceSpace('local');
+                    if (source) setHitTestSource(source);
+                    else console.error('Failed to set up hit test source: XRHitTestSource is undefined');
+                    setReferenceSpace(localRefSpace);
                 }
-                const localRefSpace = await activeSession.requestReferenceSpace('local');
-                setReferenceSpace(localRefSpace);
             } catch (err) {
                 console.error('Failed to set up hit test source:', err);
             }
         };
-
         setupHitTest();
     }, [activeSession]);
 
@@ -148,8 +147,8 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
 
     return (
         <>
-            <ambientLight intensity={0.8} />
-            <directionalLight position={[1, 4, 2.5]} intensity={1.2} castShadow={false} />
+            <ambientLight intensity={1.0} />
+            <directionalLight position={[1, 4, 2.5]} intensity={1.2} />
             <Reticle visible={reticleVisible} matrix={reticleMatrixRef.current} />
             {placedObjects.map(obj => (
                 <PlacedObject
@@ -173,6 +172,7 @@ const ARCoreExperience: React.FC<ARCoreExperienceProps> = ({ activeSession, qrCo
             <Canvas
                 gl={{ antialias: true, alpha: true }}
                 style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1 }}
+                camera={{ fov: 70, near: 0.01, far: 20 }}
             >
                 <ARScene activeSession={activeSession} qrCodeData={qrCodeData} onExit={onExit} />
             </Canvas>
