@@ -29,7 +29,7 @@ const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
     return (
         <mesh ref={reticleRef} matrixAutoUpdate={false} visible={false} rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry args={[0.05, 0.075, 32]} />
-            <meshBasicMaterial color="white" transparent opacity={0.85} depthTest={false} />
+            <meshBasicMaterial color="white" transparent={false} opacity={0.85} depthTest={false} />
         </mesh>
     );
 };
@@ -285,7 +285,7 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
     return (
         <>
             <ambientLight intensity={0.8} />
-            <directionalLight position={[1, 4, 2.5]} intensity={1.2} castShadow />
+            <directionalLight position={[1, 4, 2.5]} intensity={1.2} castShadow={false} />
             <Reticle visible={isReticleVisible} matrix={reticleMatrixRef.current} />
             {placedObjects.map(obj => (
                 <PlacedObject
