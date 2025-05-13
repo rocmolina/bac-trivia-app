@@ -31,7 +31,6 @@ export default function LoginPage() {
             console.log('Login exitoso:', userData);
             storeLogin(userData); // Guardar en store (userData debe coincidir con UserState)
             router.push('/profile'); // Redirigir a perfil si login éxito
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error("Error de login:", err);
             const errorMessage = err.response?.data?.error || err.message || 'Error al iniciar sesión. Verifica tu UsuarioID.';
