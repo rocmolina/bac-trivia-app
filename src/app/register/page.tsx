@@ -33,8 +33,7 @@ export default function RegisterPage() {
             const result = await register({ nombre, apellido, cedula }); // Llamada API real
             console.log('Registro exitoso:', result);
             setSuccessMessage(`¡Registro exitoso! Tu UsuarioID es: ${result.usuarioId}. Serás redirigido para iniciar sesión.`);
-            setTimeout(() => router.push('/login'), 3000); // Redirigir tras mensaje
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setTimeout(() => router.push('/login'), 5000); // Redirigir tras mensaje
         } catch (err: any) {
             console.error("Error de registro:", err);
             const errorMessage = err.response?.data?.error || err.message || 'Error al registrar el usuario.';
