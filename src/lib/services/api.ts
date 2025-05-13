@@ -68,6 +68,26 @@ export interface SubmitTriviaResponse {
     collectedItem?: CollectedItem | null; // El ítem que se acaba de recolectar (si fue correcto)
 }
 
+// --- Nuevos Tipos para Admin ---
+export interface AdminLoginPayload {
+    adminId: string;
+    password_login: string;
+}
+
+export interface AdminLoginResponse {
+    message: string;
+    adminId?: string;
+    nombre?: string;
+}
+
+export interface UserScoreData {
+    firestoreId: string;
+    usuarioId: string | null;
+    nombre: string | null;
+    apellido: string | null;
+    cedula: string | null;
+    puntos: number;
+}
 
 // --- Funciones API Exportadas ---
 export const register = async (userData: { nombre: string; apellido: string; cedula: string }): Promise<RegisterResponse> => {
@@ -128,5 +148,36 @@ export const submitTriviaAnswer = async (
             throw error.response.data; // Lanzar el error de la API para ser atrapado en el componente
         }
         throw error; // Si no hay respuesta de la API (error de red), lanzar el error
+    }
+};
+
+// --- Nuevas Funciones API para Admin ---
+
+export const loginAdminApi = async (payload: { adminId: string, password: string }): Promise<AdminLoginResponse> => {
+    const endpoint = '/loginAdmin';
+    // El payload que se envía a la API debe tener la clave 'password'
+    const apiPayload = { adminId: payload.adminId, password: payload.password };
+    console.log('API Admin Login Request:', apiClient.defaults.baseURL + endpoint, apiPayload);
+    try {
+        const response = await apiClient.post<AdminLoginResponse>(endpoint, apiPayload);
+        console.log('API Admin Login Response:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('API Admin Login Error:', error.response?.data || error.message);
+        throw error.response?.data || error; // Lanzar el error para que el componente lo maneje
+    }
+};
+
+export const getUsersWithScoresApi = async (): Promise<UserScoreData[]> => {
+    const endpoint = '/getUsersWithScores';
+    // TODO: Idealmente, aquí se enviaría un token de admin si se implementara
+    console.log('API Get Users Request:', apiClient.defaults.baseURL + endpoint);
+    try {
+        const response = await apiClient.get<UserScoreData[]>(endpoint); // Asumiendo GET y sin payload por ahora
+        console.log('API Get Users Response:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('API Get Users Error:', error.response?.data || error.message);
+        throw error.response?.data || error;
     }
 };

@@ -1,10 +1,12 @@
 // src/app/profile/page.tsx
+// ACTUALIZADO: renderCollectedItems ahora usa <img> para los SVGs externos.
 'use client';
 import React from 'react';
-import Button from '@/components/ui/Button'; // Ajusta la ruta si es necesario
+import Button from '@/components/ui/Button';
 import { useRouter } from 'next/navigation';
-import useUserStore from '@/lib/store/userStore'; // Ajusta la ruta si es necesario
-import ProtectedRoute from '@/components/auth/ProtectedRoute'; // Ajusta la ruta si es necesario
+import useUserStore from '@/lib/store/userStore';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import Image from 'next/image'; // Importar el componente Image de Next.js
 
 // --- Componente Interno con Lógica y UI del Perfil ---
 function ProfileContent() {
@@ -24,8 +26,8 @@ function ProfileContent() {
         logout(); // Llamar a la acción del store. ProtectedRoute manejará la redirección.
     };
 
-    // Mostrar loader mientras los datos se hidratan (ProtectedRoute también muestra uno)
-    if (!usuarioId) {
+    if (!usuarioId && typeof window !== 'undefined') { //typeof window !== 'undefined' para evitar error de hidratación si se renderiza en server
+        // ProtectedRoute debería manejar esto, pero es un fallback.
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <p>Cargando perfil...</p>
@@ -33,12 +35,28 @@ function ProfileContent() {
         );
     }
 
-    // Función para renderizar los íconos SVG de los items coleccionados
+    // Helper para obtener la URL del archivo SVG basado en la categoría
+    const getCategorySvgUrl = (category: string | undefined): string => {
+        if (!category) return '/icons/default.svg'; // Un SVG por defecto si no hay categoría
+        const categoryLower = category.toLowerCase();
+        if (categoryLower.includes('ahorro')) return '/icons/ahorro.svg';
+        if (categoryLower.includes('tarjeta')) return '/icons/tarjeta.svg';
+        if (categoryLower.includes('casa')) return '/icons/casa.svg';
+        if (categoryLower.includes('carro')) return '/icons/carro.svg';
+
+        // Fallback si la categoría no coincide con un SVG conocido,
+        // podrías tener un SVG genérico o intentar normalizar el nombre.
+        // Por ahora, un default.svg es una buena práctica.
+        console.warn(`No se encontró un SVG específico para la categoría: ${category}, usando default.`);
+        return `/icons/${categoryLower}.svg`; // Intenta usar el nombre de categoría directamente (ej. si tienes "finanzas.svg")
+        // O mejor, un default genérico:
+        // return '/icons/default-emoji.svg';
+    };
+
+
+    // Función para renderizar los íconos SVG de los items coleccionados usando <img>
     const renderCollectedItems = () => {
-        // Asumiendo que 'itemsCollected' es un array de objetos como:
-        // { triviaId?: string, category: string, totemId?: string, answeredCorrectly?: boolean, timestamp?: string }
-        // Filtramos por los respondidos correctamente si existe el campo, sino mostramos todos
-        const itemsToShow = itemsCollected?.filter(item => item.answeredCorrectly !== false) || [];
+        const itemsToShow = itemsCollected?.filter(item => item.answeredCorrectly) || [];
 
         if (itemsToShow.length === 0) {
             return <p className="text-sm text-gray-500 italic">Aún no has atrapado ningún emoji.</p>;
@@ -46,28 +64,29 @@ function ProfileContent() {
 
         // Renderizar SVG para cada item
         return itemsToShow.map((item, index) => {
-            let iconSvg: React.ReactNode = null;
-            const iconClass = "w-8 h-8 text-gray-700"; // Tamaño y color SVG
+            const svgUrl = getCategorySvgUrl(item.category);
+            // Ajusta width y height según necesites para la "versión pequeña"
+            const iconSize = 24; // 24px (equivalente a w-6 h-6 en Tailwind)
 
-            switch (item.category) {
-                case 'Ahorro':
-                    iconSvg = ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.75A.75.75 0 0 1 3 4.5h.75m0 0h.75A.75.75 0 0 1 4.5 6v.75m0 0v.75A.75.75 0 0 1 3.75 8.25h-.75m0 0h-.75A.75.75 0 0 1 2.25 7.5V6.75m0 0H3.75m0 0h.75m0 0h.75M6 12v5.25A2.25 2.25 0 0 0 8.25 19.5h7.5A2.25 2.25 0 0 0 18 17.25V12m0 0h-1.5m1.5 0a2.25 2.25 0 0 1-2.25 2.25H8.25A2.25 2.25 0 0 1 6 12m0 0a2.25 2.25 0 0 0-2.25 2.25v5.25A2.25 2.25 0 0 0 6 21.75h7.5A2.25 2.25 0 0 0 15.75 19.5V14.25M18 12a2.25 2.25 0 0 0-2.25-2.25H8.25A2.25 2.25 0 0 0 6 12m12 0a2.25 2.25 0 0 1 2.25 2.25v5.25A2.25 2.25 0 0 1 18 21.75h-.75m.75-9h-1.5" /></svg> );
-                    break;
-                case 'Tarjeta':
-                    iconSvg = ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg> );
-                    break;
-                case 'Casa':
-                    iconSvg = ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}><path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" /></svg> );
-                    break;
-                case 'Carro':
-                    iconSvg = ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-6 0H6m4.125-1.125a1.5 1.5 0 0 1 1.17-1.363l3.876-1.162a1.5 1.5 0 0 0 1.17-1.363V8.25m-7.5 0a1.5 1.5 0 0 1 1.5-1.5h5.25a1.5 1.5 0 0 1 1.5 1.5v3.75m-7.5 0v-.188a1.5 1.5 0 1 1 3 0v.188m-3 0h3m-6.75 0h6.75m-6.75 0H6m6 0h6.75m-6.75 0h6.75m0 0v-.188a1.5 1.5 0 1 0-3 0v.188m3 0h-3m6.75-3.75a1.5 1.5 0 0 0-1.5-1.5h-5.25a1.5 1.5 0 0 0-1.5 1.5v3.75m10.5-3.75a1.5 1.5 0 0 0-1.5-1.5h-5.25a1.5 1.5 0 0 0-1.5 1.5v3.75m7.5-3.75h1.5m-1.5 0h-5.25m5.25 0v3.75" /></svg> );
-                    break;
-                default:
-                    iconSvg = ( <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={iconClass}><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg> );
-            }
             return (
-                <div key={`${item.triviaId || index}`} className="p-1 bg-gray-200 rounded-md shadow-sm" title={`Categoría: ${item.category}`}>
-                    {iconSvg}
+                <div
+                    key={`${item.triviaId}-${item.totemId}-${index}`} // Clave más única
+                    className="p-1 bg-gray-200 rounded-md shadow-sm flex items-center justify-center"
+                    title={`Categoría: ${item.category}`}
+                    style={{ width: `${iconSize + 8}px`, height: `${iconSize + 8}px` }} // Contenedor un poco más grande que el ícono
+                >
+                    <Image
+                        src={svgUrl}
+                        alt={item.category || 'Emoji coleccionado'}
+                        width={iconSize}
+                        height={iconSize}
+                        // onError para manejar si un SVG no carga (opcional pero recomendado)
+                        onError={(e) => {
+                            console.warn(`Error al cargar SVG: ${svgUrl}`);
+                            // Podrías cambiar el src a un SVG de fallback aquí si es necesario
+                            // e.currentTarget.src = '/icons/default-error.svg';
+                        }}
+                    />
                 </div>
             );
         });

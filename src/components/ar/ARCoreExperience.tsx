@@ -6,8 +6,27 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Canvas, useThree, useFrame, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useRouter } from 'next/navigation';
+import { Image as DreiImage } from '@react-three/drei';
 
-// --- Componente Retícula (Sin cambios) ---
+// Helper para obtener el nombre del archivo SVG basado en la categoría del qrCodeData
+const getCategoryFromQrData = (qrData: string): string | null => {
+    if (!qrData) return null;
+    // Asumiendo formato "TOTEMXX_Categoria_INFO"
+    const parts = qrData.toLowerCase().split('_');
+    if (parts.length >= 2) {
+        // Intenta mapear a nombres de archivo SVG esperados
+        // (ej: "ahorro" -> "ahorro.svg", "tarjeta" -> "tarjeta.svg", "casa" -> "casa.svg", "carro" -> "carro.svg")
+        const categoryPart = parts[1];
+        if (categoryPart.includes('ahorro')) return 'ahorro';
+        if (categoryPart.includes('tarjeta')) return 'tarjeta';
+        if (categoryPart.includes('casa')) return 'casa';
+        if (categoryPart.includes('carro')) return 'carro';
+        return categoryPart; // fallback, puede no coincidir con un archivo
+    }
+    return null;
+};
+
+// --- Componente Retícula ---
 interface ReticleProps {
     visible: boolean;
     matrix: THREE.Matrix4 | null;
@@ -33,16 +52,16 @@ const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
     );
 };
 
-// --- Componente Objeto Colocado (onClick ahora es menos crítico, pero lo mantenemos por si acaso) ---
+// start new1
+// --- Componente PlacedObject MODIFICADO para mostrar SVG ---
 interface PlacedObjectProps {
     matrix: THREE.Matrix4;
-    onSelectFallback: () => void; // Renombrado para claridad, ya que el tap principal se maneja arriba
+    onSelectFallback: () => void;
     qrDataForDebug?: string;
 }
 const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelectFallback, qrDataForDebug }) => {
-    const meshRef = useRef<THREE.Mesh>(null);
-    const [hovered, setHovered] = useState(false);
-    const [initialColor] = useState(() => new THREE.Color().setHex(Math.random() * 0xffffff));
+    const meshRef = useRef<THREE.Mesh>(null!); // Usamos Mesh para el objeto clickeable (el plano con la textura)
+    const [hovered, setHovered] = useState(false); // No usado actualmente para el SVG pero se puede mantener
 
     useEffect(() => {
         if (meshRef.current) {
@@ -53,27 +72,88 @@ const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelectFallback, q
 
     const handleClick = (e: ThreeEvent<PointerEvent>) => {
         e.stopPropagation();
-        console.log(`PlacedObject: onClick INTERNO. QR Data: ${qrDataForDebug}. Llamando a onSelectFallback.`);
-        // alert(`PlacedObject INTERNO Tapped! QR: ${qrDataForDebug}`); // Ya no es la via principal
-        onSelectFallback(); // Podría usarse si alguna vez el clic directo funciona mejor
+        console.log(`PlacedObject (SVG): onClick INTERNO. QR: ${qrDataForDebug}.`);
+        onSelectFallback();
     };
-    const handlePointerOver = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(true); };
-    const handlePointerOut = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(false); };
+
+    const categoryName = qrDataForDebug ? getCategoryFromQrData(qrDataForDebug) : null;
+    const svgUrl = categoryName ? `/icons/${categoryName}.svg` : '/icons/default.svg'; // Tener un default.svg es buena idea
+
+    // Ajustar el tamaño del plano donde se mostrará el SVG
+    const planeSize = 0.3; // Metros en el mundo AR, ajustar según sea necesario
 
     return (
         <mesh
             ref={meshRef}
-            matrixAutoUpdate={false}
-            onClick={handleClick} // Lo dejamos, pero el flujo principal ahora no depende de él.
-            onPointerOver={handlePointerOver}
-            onPointerOut={handlePointerOut}
-            scale={hovered ? 0.22 : 0.20}
+            matrixAutoUpdate={false} // La matriz es aplicada desde props
+            onClick={handleClick}
+            // La rotación aquí es para que el plano mire hacia arriba si la matriz del hit-test es identidad.
+            // La matriz del hit-test debería orientarlo correctamente. Si no, ajustar aquí.
+            rotation-x={-Math.PI} // Puede no ser necesario si la matriz de pose es correcta
         >
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color={hovered ? 0xff00ff : initialColor} roughness={0.5} metalness={0.3}/>
+            <planeGeometry args={[planeSize, planeSize]} />
+            {/* Usamos DreiImage para cargar el SVG como textura.
+                Asegúrate que los SVGs tengan un fondo transparente si quieres que se vean como "emojis" flotantes.
+                O que el material del plano maneje la transparencia.
+            */}
+            <React.Suspense fallback={<meshBasicMaterial color="lightgray" wireframe={true} />}>
+                <DreiImage
+                    url={svgUrl}
+                    transparent // Asumiendo que los SVGs tienen transparencia o queremos que el material lo sea
+                    // scale={[planeSize, planeSize, 1]} // El tamaño ya está en planeGeometry
+                    toneMapped={false} // A menudo mejor para UI/iconos
+                >
+                    {/* DreiImage crea su propio material, pero podemos intentar anidarlo o usar MeshBasicMaterial con map */}
+                    {/* <meshBasicMaterial transparent map={new THREE.TextureLoader().load(svgUrl)} /> */}
+                    {/* Lo anterior es más manual. DreiImage debería funcionar mejor. */}
+                </DreiImage>
+            </React.Suspense>
         </mesh>
     );
 };
+// end new1
+
+// // --- Componente Objeto Colocado (onClick ahora es menos crítico, pero lo mantenemos por si acaso) ---
+// interface PlacedObjectProps {
+//     matrix: THREE.Matrix4;
+//     onSelectFallback: () => void; // Renombrado para claridad, ya que el tap principal se maneja arriba
+//     qrDataForDebug?: string;
+// }
+// const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelectFallback, qrDataForDebug }) => {
+//     const meshRef = useRef<THREE.Mesh>(null);
+//     const [hovered, setHovered] = useState(false);
+//     const [initialColor] = useState(() => new THREE.Color().setHex(Math.random() * 0xffffff));
+//
+//     useEffect(() => {
+//         if (meshRef.current) {
+//             meshRef.current.matrixAutoUpdate = false;
+//             meshRef.current.matrix.copy(matrix);
+//         }
+//     }, [matrix]);
+//
+//     const handleClick = (e: ThreeEvent<PointerEvent>) => {
+//         e.stopPropagation();
+//         console.log(`PlacedObject: onClick INTERNO. QR Data: ${qrDataForDebug}. Llamando a onSelectFallback.`);
+//         // alert(`PlacedObject INTERNO Tapped! QR: ${qrDataForDebug}`); // Ya no es la via principal
+//         onSelectFallback(); // Podría usarse si alguna vez el clic directo funciona mejor
+//     };
+//     const handlePointerOver = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(true); };
+//     const handlePointerOut = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(false); };
+//
+//     return (
+//         <mesh
+//             ref={meshRef}
+//             matrixAutoUpdate={false}
+//             onClick={handleClick} // Lo dejamos, pero el flujo principal ahora no depende de él.
+//             onPointerOver={handlePointerOver}
+//             onPointerOut={handlePointerOut}
+//             scale={hovered ? 0.22 : 0.20}
+//         >
+//             <boxGeometry args={[1, 1, 1]} />
+//             <meshStandardMaterial color={hovered ? 0xff00ff : initialColor} roughness={0.5} metalness={0.3}/>
+//         </mesh>
+//     );
+// };
 
 interface ARSceneProps {
     activeSession: XRSession;
