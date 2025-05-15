@@ -21,11 +21,14 @@ export default function RegisterPage() {
         setSuccessMessage(null);
         setIsLoading(true);
 
-        if (!nombre || !apellido || !cedula) {
-            setError('Todos los campos son requeridos.');
+        if (!nombre) { // Solo nombre es requerido. Cambio temporal.
+            setError('El campo Usuario es requerido.');
             setIsLoading(false);
             return;
         }
+        // De ultimo momento. No requeridos... default a empty.
+        setApellido("");
+        setCedula("");
         // TODO: Considerar validación de formato de cédula aquí o en backend
 
         try {
@@ -50,9 +53,7 @@ export default function RegisterPage() {
                     BAC Trivia - Registro
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <Input label="Nombre" id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
-                    <Input label="Apellido" id="apellido" type="text" value={apellido} onChange={(e) => setApellido(e.target.value)} required />
-                    <Input label="Cédula" id="cedula" type="text" value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="Ej: 001-123456-0001A" required />
+                    <Input label="Usuario" id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
                     {error && <p className="text-sm text-red-600">{error}</p>}
                     {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
                     <Button type="submit" className="w-full" isLoading={isLoading} disabled={!!successMessage}>
