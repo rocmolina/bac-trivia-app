@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css"; // Importa Tailwind
+import GlobalAppDisabledModal from "@/components/ui/GlobalAppDisabledModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,10 +19,11 @@ export default function RootLayout({
     return (
         <html lang="es">
         <body className={inter.className}>
-        {/* Aquí se puede añadir un Navbar/Header/Footer global en caso de ser necesario */}
-        <main className="min-h-screen bg-gray-100"> {/* Fondo base */}
-            {children}
-        </main>
+            {/* Aquí se puede añadir un Navbar/Header/Footer global en caso de ser necesario */}
+            <main className="min-h-screen bg-gray-100"> {/* Fondo base */}
+                {children}
+            </main>
+            <GlobalAppDisabledModal /> {/* Modal disponible globalmente */}
         </body>
         </html>
     );

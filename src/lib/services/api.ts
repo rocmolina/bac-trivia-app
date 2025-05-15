@@ -1,5 +1,6 @@
 // src/lib/services/api.ts
 import axios from 'axios';
+import useAppStatusStore from '@/lib/store/appStatusStore';
 
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 console.log("API Base URL from Env:", baseURL);
@@ -10,6 +11,26 @@ const apiClient = axios.create({
         'Content-Type': 'application/json',
     },
 });
+
+// Interceptor de respuesta
+apiClient.interceptors.response.use(
+    (response) => {
+        // Cualquier código de estado que este dentro del rango de 2xx causa la ejecución de esta función
+        return response;
+    },
+    (error) => {
+        // Cualquier código de estado que este fuera del rango de 2xx causa la ejecución de esta función
+        if (error.response && error.response.status === 503) {
+            // La aplicación está desactivada.
+            console.warn("API Interceptor: Recibido error 503 (App Desactivada).");
+            // Usar el store para abrir el modal global
+            const { showAppDisabledModal } = useAppStatusStore.getState();
+            showAppDisabledModal(); // Función definida en el store
+        }
+        // Es importante devolver la promesa rechazada para que el .catch() original de la llamada siga funcionando
+        return Promise.reject(error);
+    }
+);
 
 // --- Tipos para Respuestas ---
 interface RegisterResponse {
@@ -87,6 +108,16 @@ export interface UserScoreData {
     apellido: string | null;
     cedula: string | null;
     puntos: number;
+}
+
+// --- Nuevos Tipos para App Status ---
+export interface AppStatusResponse {
+    isAppActive: boolean;
+    message?: string; // Podría usarse para el mensaje del backend
+}
+
+export interface SetAppStatusPayload {
+    isActive: boolean;
 }
 
 // --- Funciones API Exportadas ---
@@ -178,6 +209,38 @@ export const getUsersWithScoresApi = async (): Promise<UserScoreData[]> => {
         return response.data;
     } catch (error: any) {
         console.error('API Get Users Error:', error.response?.data || error.message);
+        throw error.response?.data || error;
+    }
+};
+
+// --- Nuevas Funciones API para App Status ---
+export const getAppStatusApi = async (): Promise<AppStatusResponse> => {
+    const endpoint = '/getAppStatus';
+    try {
+        const response = await apiClient.get<AppStatusResponse>(endpoint);
+        console.log('API Get App Status Response:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('API Get App Status Error:', error.response?.data || error.message);
+        // Si falla, asumimos que está activa para no bloquear al admin innecesariamente,
+        // pero el admin debería poder setearlo.
+        // O lanzar el error para que el dashboard lo maneje.
+        throw error.response?.data || error;
+    }
+};
+
+
+export const setAppStatusApi = async (payload: SetAppStatusPayload): Promise<{ message: string }> => {
+    const endpoint = '/setAppStatus';
+    // TODO: Idealmente, esta llamada debería estar autenticada para que solo admins la hagan.
+    // El backend debería verificar el token/sesión del admin.
+    console.log('API Set App Status Request:', apiClient.defaults.baseURL + endpoint, payload);
+    try {
+        const response = await apiClient.post<{ message: string }>(endpoint, payload);
+        console.log('API Set App Status Response:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('API Set App Status Error:', error.response?.data || error.message);
         throw error.response?.data || error;
     }
 };

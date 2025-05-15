@@ -102,7 +102,7 @@ function ProfileContent() {
                         <span className="text-3xl text-red-600 font-semibold">{nombre?.charAt(0).toUpperCase()}</span>
                     </div>
                     <h2 className="text-2xl font-semibold text-gray-800">
-                        {nombre} {apellido}
+                        {nombre}
                     </h2>
                     <p className="text-sm text-gray-500">{usuarioId}</p>
                 </div>
