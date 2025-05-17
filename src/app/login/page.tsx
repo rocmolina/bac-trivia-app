@@ -6,6 +6,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { login } from '@/lib/services/api'; // Importar desde servicio API
 import useUserStore from '@/lib/store/userStore'; // Importar desde store Zustand
+import Image from 'next/image';
 
 export default function LoginPage() {
     const [usuarioId, setUsuarioId] = useState('');
@@ -40,37 +41,79 @@ export default function LoginPage() {
         }
     };
 
+    // return (
+    //     <div className="flex items-center justify-center min-h-screen">
+    //         <div className="p-8 max-w-md w-full bg-white rounded-lg shadow-md">
+    //             <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
+    //                 BAC Trivia - Iniciar Sesión
+    //             </h2>
+    //             <form onSubmit={handleSubmit} className="space-y-4">
+    //                 <Input
+    //                     label="UsuarioID (Ej: Nombre-Numero)"
+    //                     id="usuarioId"
+    //                     type="text"
+    //                     value={usuarioId}
+    //                     onChange={(e) => setUsuarioId(e.target.value)}
+    //                     placeholder="TuUsuario-123"
+    //                     required
+    //                     error={error && error.includes('UsuarioID') ? error : undefined}
+    //                 />
+    //                 {error && ( // Mostrar error general si no es específico del campo
+    //                     <p className="text-sm text-red-600">{error}</p>
+    //                 )}
+    //                 <Button type="submit" className="w-full" isLoading={isLoading}>
+    //                     Ingresar
+    //                 </Button>
+    //                 <p className="text-sm text-center text-gray-600">
+    //                     ¿No tienes cuenta?{' '}
+    //                     <a href="/register" className="font-medium text-red-600 hover:text-red-500">
+    //                         Regístrate aquí
+    //                     </a>
+    //                 </p>
+    //             </form>
+    //         </div>
+    //     </div>
+    // );
+
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            <div className="p-8 max-w-md w-full bg-white rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
-                    BAC Trivia - Iniciar Sesión
+        <div className="flex flex-col items-center justify-center min-h-screen bg-white p-4 relative text-gray-800 dark:text-gray-800"> {/* Fondo blanco, texto base oscuro */}
+
+            <div className="absolute top-8 sm:top-12">
+                <Image src="/logos/bactrivia_logo.svg" alt="BAC Trivia Logo" width={180} height={60} priority />
+            </div>
+
+            <div className="p-8 pt-10 max-w-md w-full bg-white rounded-lg shadow-xl mt-28 sm:mt-32">
+                <h2 className="text-2xl font-bold text-center text-gray-400 mb-6"> {/* Texto gris */}
+                    Iniciar Sesión
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <Input
-                        label="UsuarioID (Ej: Nombre-Numero)"
+                        label="UsuarioID (Ej: Ususario-Numero)"
                         id="usuarioId"
                         type="text"
                         value={usuarioId}
                         onChange={(e) => setUsuarioId(e.target.value)}
-                        placeholder="TuUsuario-123"
+                        placeholder="usuario-123"
                         required
                         error={error && error.includes('UsuarioID') ? error : undefined}
                     />
-                    {error && ( // Mostrar error general si no es específico del campo
-                        <p className="text-sm text-red-600">{error}</p>
-                    )}
-                    <Button type="submit" className="w-full" isLoading={isLoading}>
+                    {error && <p className="text-sm text-red-600">{error}</p>}
+                    <Button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-500 font-bold py-3" isLoading={isLoading}>
                         Ingresar
                     </Button>
                     <p className="text-sm text-center text-gray-600">
                         ¿No tienes cuenta?{' '}
-                        <a href="/register" className="font-medium text-red-600 hover:text-red-500">
+                        <a href="/register" className="font-medium text-red-600 hover:text-red-700"> {/* Enlace rojo */}
                             Regístrate aquí
                         </a>
                     </p>
                 </form>
             </div>
+
+            <div className="absolute bottom-4 right-4">
+                <Image src="/logos/bac_logo.png" alt="BAC Logo" width={80} height={20} />
+            </div>
         </div>
     );
+
 }

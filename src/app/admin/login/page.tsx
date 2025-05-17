@@ -7,6 +7,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import useAdminStore from '@/lib/store/adminStore';
 import { loginAdminApi } from '@/lib/services/api';
+import Image from 'next/image';
 
 export default function AdminLoginPage() {
     const [adminId, setAdminId] = useState('');
@@ -45,10 +46,47 @@ export default function AdminLoginPage() {
         }
     };
 
+    // return (
+    //     <div className="flex items-center justify-center min-h-screen bg-gray-200">
+    //         <div className="p-8 max-w-md w-full bg-white rounded-lg shadow-xl">
+    //             <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+    //                 BAC Trivia - Admin Login
+    //             </h2>
+    //             <form onSubmit={handleSubmit} className="space-y-6">
+    //                 <Input
+    //                     label="Admin ID"
+    //                     id="adminId"
+    //                     type="text"
+    //                     value={adminId}
+    //                     onChange={(e) => setAdminId(e.target.value)}
+    //                     placeholder="tuAdminID"
+    //                     required
+    //                 />
+    //                 <Input
+    //                     label="Contraseña"
+    //                     id="password"
+    //                     type="password"
+    //                     value={password}
+    //                     onChange={(e) => setPassword(e.target.value)}
+    //                     required
+    //                 />
+    //                 {error && (
+    //                     <p className="text-sm text-red-600 bg-red-100 p-3 rounded-md border border-red-300">{error}</p>
+    //                 )}
+    //                 <Button type="submit" className="w-full !py-3 !text-lg" isLoading={isLoading}>
+    //                     Ingresar como Admin
+    //                 </Button>
+    //             </form>
+    //         </div>
+    //     </div>
+    // );
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-200">
+        <div className="flex items-center justify-center min-h-screen bg-white p-4 relative text-gray-800 dark:text-gray-800">
+            <div className="absolute top-8 sm:top-12">
+                <Image src="/logos/bac_logo.png" alt="BAC Logo" width={120} height={160} priority />
+            </div>
             <div className="p-8 max-w-md w-full bg-white rounded-lg shadow-xl">
-                <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+                <h2 className="text-3xl font-bold text-center text-gray-400 mb-8"> {/* Texto oscuro */}
                     BAC Trivia - Admin Login
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -72,11 +110,16 @@ export default function AdminLoginPage() {
                     {error && (
                         <p className="text-sm text-red-600 bg-red-100 p-3 rounded-md border border-red-300">{error}</p>
                     )}
-                    <Button type="submit" className="w-full !py-3 !text-lg" isLoading={isLoading}>
+                    <Button
+                        type="submit"
+                        className="w-full py-3 text-lg bg-yellow-400 hover:bg-yellow-500 text-black font-semibold" /* Botón amarillo, texto negro */
+                        isLoading={isLoading}
+                    >
                         Ingresar como Admin
                     </Button>
                 </form>
             </div>
+
         </div>
     );
 }
