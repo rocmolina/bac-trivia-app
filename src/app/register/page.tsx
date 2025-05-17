@@ -81,7 +81,7 @@ export default function RegisterPage() {
                     BAC Trivia - Registro
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <Input label="Usuario" id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+                    <Input label="Nuevo Usuario" id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
                     {error && <p className="text-sm text-red-600">{error}</p>}
                     {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
                     <Button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3" isLoading={isLoading} disabled={!!successMessage}>
