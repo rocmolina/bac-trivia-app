@@ -7,7 +7,8 @@ import Button from '@/components/ui/Button';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import useUserStore from '@/lib/store/userStore';
 import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeSupportedFormats, Html5QrcodeResult } from 'html5-qrcode';
-import ARCoreExperience from '@/components/ar/ARCoreExperience'; // Asegúrate que la ruta sea correcta
+import ARCoreExperience from '@/components/ar/ARCoreExperience';
+import Image from 'next/image';
 
 // Iconos (sin cambios)
 const UserCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -69,7 +70,7 @@ function PlayPageContent() {
                         stopScanner();
                     },
                     (errorMessage) => {
-                        // console.warn("PlayPage: Error de escaner QR (puede ignorarse si es solo 'no QR found'):", errorMessage);
+                        console.warn("PlayPage: Error de escaner QR (puede ignorarse si es solo 'no QR found'):", errorMessage);
                     }
                 );
                 html5QrCodeScannerRef.current = scannerInstance;
@@ -139,7 +140,6 @@ function PlayPageContent() {
                 }
                 // No reiniciar el escáner automáticamente
             });
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("PlayPage: Error al solicitar sesión AR:", error);
             let message = error.message || error.toString();
@@ -236,6 +236,7 @@ function PlayPageContent() {
 
             {!arSession && ( // Mostrar UI de escaneo/opciones si NO hay sesión AR
                 <>
+                    <div className="mb-8"> <Image src="/logos/bactrivia_logo.svg" alt="BAC Trivia Logo" width={140} height={40} priority /> </div>
                     <h1 className="text-3xl font-bold text-red-700 mb-4 mt-12 sm:mt-0">BAC Trivia - ¡A Jugar!</h1>
 
                     {!showScanDataAndAROption && !shouldRenderScannerContainer && (
@@ -256,9 +257,6 @@ function PlayPageContent() {
                     {showScanDataAndAROption && scannedData && (
                         <div className="mt-6 p-4 bg-white rounded-lg shadow-md w-full max-w-md">
                             <p className="text-lg font-semibold mb-2">¡QR Escaneado!</p>
-                            <p className="text-md text-gray-700 mb-1 break-words">
-                                Tótem: <span className="font-mono bg-gray-200 px-2 py-1 rounded">{scannedData}</span>
-                            </p>
                             <p className="text-sm text-gray-500 mb-4">¿Listo para la Realidad Aumentada?</p>
 
                             <Button
