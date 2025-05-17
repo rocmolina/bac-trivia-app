@@ -1,15 +1,21 @@
 // src/app/admin/dashboard/page.tsx
 'use client';
 
-import React, { useEffect, useState }  from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useAdminStore from '@/lib/store/adminStore';
-import { getUsersWithScoresApi, UserScoreData, getAppStatusApi, setAppStatusApi } from '@/lib/services/api';
+// QUITAR getUsersWithScoresApi, ya no la usaremos directamente para la tabla principal
+import { getAppStatusApi, setAppStatusApi, UserScoreData } from '@/lib/services/api';
 import Button from '@/components/ui/Button';
-import Image from 'next/image'; // <--- IMPORTAR Image
+import Image from 'next/image';
 
-// ProtectedAdminRoute (sin cambios, ya es robusta)
+// Importaciones de Firebase para el listener en tiempo real
+import { db } from '@/lib/firebaseConfig'; // Asumiendo que exportas 'db' desde tu firebaseConfig
+import { collection, query, orderBy, onSnapshot, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+
+// ProtectedAdminRoute (sin cambios desde la última versión funcional)
 const ProtectedAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    // ... (código sin cambios)
     const router = useRouter();
     const isAdminAuthenticated = useAdminStore((state) => state.isAdminAuthenticated);
     const [isHydrated, setIsHydrated] = useState(false);
@@ -29,29 +35,69 @@ const ProtectedAdminRoute: React.FC<{ children: React.ReactNode }> = ({ children
     return <div className="flex items-center justify-center min-h-screen"><p>Acceso denegado. Redirigiendo a login...</p></div>;
 };
 
-// Contenido del Dashboard
+
+// Contenido del Dashboard (MODIFICADO para Realtime)
 function AdminDashboardContent() {
     const adminNombre = useAdminStore((state) => state.adminNombre);
     const logoutAdmin = useAdminStore((state) => state.logoutAdmin);
 
+    // Estado para la lista de usuarios (se actualizará en tiempo real)
     const [users, setUsers] = useState<UserScoreData[]>([]);
-    const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+    const [isLoadingUsers, setIsLoadingUsers] = useState(true); // Para la carga inicial del listener
     const [usersError, setUsersError] = useState<string | null>(null);
 
+    // Estados para el control de "Activar/Desactivar App" (sin cambios)
     const [isAppActive, setIsAppActive] = useState(true);
     const [isLoadingStatus, setIsLoadingStatus] = useState(true);
     const [statusError, setStatusError] = useState<string | null>(null);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
+    // useEffect para el listener de Firestore en la colección 'users'
     useEffect(() => {
-        const fetchInitialData = async () => {
-            setIsLoadingUsers(true); setUsersError(null);
-            try {
-                const fetchedUsers = await getUsersWithScoresApi();
-                setUsers(fetchedUsers);
-            } catch (err: any) { setUsersError(err.error || err.message || 'Error al cargar usuarios.');
-            } finally { setIsLoadingUsers(false); }
+        if (!db) {
+            setUsersError("Error: Conexión a Firestore no disponible.");
+            setIsLoadingUsers(false);
+            return;
+        }
 
+        setIsLoadingUsers(true);
+        // Query para obtener usuarios y ordenarlos por puntos de forma descendente
+        const usersQuery = query(collection(db, "users"), orderBy("puntos", "desc"));
+
+        // Establecer el listener en tiempo real
+        const unsubscribe = onSnapshot(usersQuery,
+            (querySnapshot) => {
+                const fetchedUsers: UserScoreData[] = [];
+                querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
+                    const userData = doc.data();
+                    fetchedUsers.push({
+                        firestoreId: doc.id,
+                        usuarioId: userData.usuarioId,
+                        nombre: userData.nombre,
+                        apellido: userData.apellido,
+                        cedula: userData.cedula,
+                        puntos: userData.puntos || 0,
+                    });
+                });
+                setUsers(fetchedUsers);
+                setIsLoadingUsers(false);
+                setUsersError(null); // Limpiar error si la carga es exitosa
+                // console.log("AdminDashboard: Usuarios actualizados en tiempo real", fetchedUsers);
+            },
+            (error) => {
+                console.error("AdminDashboard: Error escuchando cambios en usuarios: ", error);
+                setUsersError("Error al cargar la lista de usuarios en tiempo real.");
+                setIsLoadingUsers(false);
+            }
+        );
+
+        // Limpiar el listener cuando el componente se desmonte
+        return () => unsubscribe();
+    }, []); // El array vacío asegura que el listener se establezca solo una vez
+
+    // useEffect para cargar el estado inicial de la app (sin cambios)
+    useEffect(() => {
+        const fetchAppStatus = async () => {
             setIsLoadingStatus(true); setStatusError(null);
             try {
                 const appStatusResponse = await getAppStatusApi();
@@ -59,12 +105,13 @@ function AdminDashboardContent() {
             } catch (err: any) { setStatusError(err.error || err.message || 'Error al cargar estado de app.');
             } finally { setIsLoadingStatus(false); }
         };
-        void fetchInitialData();
+        void fetchAppStatus();
     }, []);
 
     const handleLogout = () => logoutAdmin();
 
     const handleToggleAppStatus = async () => {
+        // ... (lógica sin cambios desde la última versión)
         setIsUpdatingStatus(true); setStatusError(null);
         const newStatus = !isAppActive;
         try {
@@ -80,15 +127,11 @@ function AdminDashboardContent() {
     return (
         <div className="container mx-auto p-4 sm:p-6 lg:p-8 bg-gray-100 min-h-screen relative text-gray-800">
             <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
-                <Image
-                    src="/logos/bactrivia_logo.svg"
-                    alt="BAC Trivia Logo"
-                    width={60}
-                    height={20}
-                />
+                <Image src="/logos/bactrivia_logo.svg" alt="BAC Trivia Logo" width={60} height={20}/>
             </div>
 
             <header className="mb-8 flex flex-wrap justify-between items-start gap-4 pb-4 border-b border-gray-300">
+                {/* ... (contenido del header sin cambios) ... */}
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Dashboard de Admin</h1>
                     {adminNombre && <p className="text-gray-700 mt-1">Bienvenido, <span className="font-semibold">{adminNombre}</span></p>}
@@ -98,7 +141,9 @@ function AdminDashboardContent() {
                 </Button>
             </header>
 
+            {/* Sección para Activar/Desactivar App (sin cambios en su estructura interna) */}
             <section className="mb-10 p-6 bg-white shadow-xl rounded-lg border border-gray-200">
+                {/* ... (contenido sin cambios) ... */}
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Control de Estado de la Aplicación</h2>
                 {isLoadingStatus && <p className="text-gray-500">Cargando estado...</p>}
                 {statusError && <p className="text-red-600 bg-red-50 p-3 rounded-md">{statusError}</p>}
@@ -125,8 +170,9 @@ function AdminDashboardContent() {
                 <p className="text-xs text-gray-500 mt-3">Esta opción controla si los usuarios (no administradores) pueden acceder y usar las funciones principales de la aplicación.</p>
             </section>
 
+            {/* Tabla de Usuarios (Ahora se actualiza en tiempo real) */}
             <section>
-                <h2 className="text-2xl font-semibold text-gray-800 mb-4">Tabla de Jugadores</h2>
+                <h2 className="text-2xl font-semibold text-gray-800 mb-4">Tabla de Jugadores (En Tiempo Real)</h2>
                 {isLoadingUsers && <p className="text-center text-lg text-gray-600 py-8">Cargando usuarios...</p>}
                 {usersError && <p className="text-center text-red-600 bg-red-100 p-4 rounded-md">{usersError}</p>}
                 {!isLoadingUsers && !usersError && (
@@ -134,14 +180,15 @@ function AdminDashboardContent() {
                         <table className="min-w-full divide-y divide-gray-300">
                             <thead className="bg-red-700">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Usuario ID</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Puntos</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider sticky top-0 bg-red-700 z-10">Usuario ID</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider sticky top-0 bg-red-700 z-10">Puntos</th>
                             </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                             {users.length === 0 ? (
-                                <tr><td colSpan={4} className="px-6 py-4 text-sm text-gray-500 text-center">No hay usuarios.</td></tr>
+                                <tr><td colSpan={4} className="px-6 py-4 text-sm text-gray-500 text-center">No hay usuarios registrados o aún no han jugado.</td></tr>
                             ) : (
+                                // Los usuarios ya vienen ordenados por puntos desde la query de Firestore
                                 users.map((user) => (
                                     <tr key={user.firestoreId} className="hover:bg-red-50 transition-colors duration-150">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.usuarioId}</td>
@@ -158,6 +205,7 @@ function AdminDashboardContent() {
     );
 }
 
+// Componente de página exportado (sin cambios)
 export default function AdminDashboardPage() {
     return (
         <ProtectedAdminRoute>

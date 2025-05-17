@@ -79,10 +79,10 @@ export default function LoginPage() {
         <div className="flex flex-col items-center justify-center min-h-screen bg-white p-4 relative text-gray-800 dark:text-gray-800"> {/* Fondo blanco, texto base oscuro */}
 
             <div className="absolute top-8 sm:top-12">
-                <Image src="/logos/bactrivia_logo.svg" alt="BAC Trivia Logo" width={180} height={60} priority />
+                <Image src="/logos/bactrivia_logo.svg" alt="BAC Trivia Logo" width={140} height={40} priority />
             </div>
 
-            <div className="p-8 pt-10 max-w-md w-full bg-white rounded-lg shadow-xl mt-28 sm:mt-32">
+            <div className="p-8 max-w-md w-full bg-white rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold text-center text-gray-400 mb-6"> {/* Texto gris */}
                     Iniciar Sesión
                 </h2>
@@ -109,7 +109,6 @@ export default function LoginPage() {
                     </p>
                 </form>
             </div>
-
             <div className="absolute bottom-4 right-4">
                 <Image src="/logos/bac_logo.png" alt="BAC Logo" width={80} height={20} />
             </div>

@@ -1,5 +1,6 @@
 // src/lib/firebaseConfig.ts
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getFirestore, Firestore } from 'firebase/firestore'; // Importar getFirestore
 
 // Leer variables de entorno (prefijo NEXT_PUBLIC_ es crucial)
 const firebaseConfig = {
@@ -20,12 +21,14 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 }
 
 // Inicializar Firebase
-let app;
+let app: FirebaseApp;
 if (!getApps().length) {
     app = initializeApp(firebaseConfig);
 } else {
     app = getApp();
 }
 
-export const firebaseApp = app; // Exportar app si la necesitas directamente
-export {}; // Asegurar que es un módulo
+// Inicializar Firestore y exportarlo
+const db: Firestore = getFirestore(app);
+
+export { app as firebaseApp, db }; // Exportar db
