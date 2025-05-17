@@ -93,46 +93,94 @@ function ProfileContent() {
     };
 
     // --- Renderizado del Perfil ---
+    // return (
+    //     <div className="container mx-auto p-4 pt-10 max-w-lg">
+    //         <div className="bg-white shadow-xl rounded-lg p-6">
+    //             {/* Sección de Información del Usuario */}
+    //             <div className="text-center mb-4">
+    //                 <div className="w-16 h-16 rounded-full bg-red-100 mx-auto flex items-center justify-center mb-3 border border-red-200">
+    //                     <span className="text-3xl text-red-600 font-semibold">{nombre?.charAt(0).toUpperCase()}</span>
+    //                 </div>
+    //                 <h2 className="text-2xl font-semibold text-gray-800">
+    //                     {nombre}
+    //                 </h2>
+    //                 <p className="text-sm text-gray-500">{usuarioId}</p>
+    //             </div>
+    //
+    //             {/* Sección de Puntos */}
+    //             <div className="mb-6 text-center p-4 bg-red-50 rounded-lg border border-red-100">
+    //                 <p className="text-3xl font-bold text-red-600">{puntos ?? 0}</p>
+    //                 <p className="text-sm text-gray-600 uppercase tracking-wide">Puntos</p>
+    //             </div>
+    //
+    //             {/* Sección de Emojis Atrapados */}
+    //             <div className="mb-8">
+    //                 <h3 className="text-lg font-medium text-gray-700 mb-3 text-center">Emojis Atrapados</h3>
+    //                 <div className="flex flex-wrap gap-3 justify-center min-h-[60px] bg-gray-100 p-3 rounded-lg border border-gray-200">
+    //                     {renderCollectedItems()}
+    //                 </div>
+    //             </div>
+    //
+    //             {/* Botones de Acción */}
+    //             <div className="flex flex-col space-y-3">
+    //                 <Button onClick={handlePlayClick} variant="primary" className="w-full py-3 text-base">
+    //                     ¡A Jugar! (Ir a AR)
+    //                 </Button>
+    //                 <Button onClick={handleLogoutClick} variant="secondary" className="w-full py-3 text-base">
+    //                     Cerrar Sesión
+    //                 </Button>
+    //             </div>
+    //         </div>
+    //     </div>
+    // );
+
     return (
-        <div className="container mx-auto p-4 pt-10 max-w-lg">
-            <div className="bg-white shadow-xl rounded-lg p-6">
-                {/* Sección de Información del Usuario */}
-                <div className="text-center mb-4">
-                    <div className="w-16 h-16 rounded-full bg-red-100 mx-auto flex items-center justify-center mb-3 border border-red-200">
-                        <span className="text-3xl text-red-600 font-semibold">{nombre?.charAt(0).toUpperCase()}</span>
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 relative">
+            <div className="absolute top-4 z-10">
+                <Image src="/logos/bactrivia_logo.svg" alt="BAC Trivia Logo" width={100} height={35} />
+            </div>
+            <div className="w-full max-w-sm bg-red-600 rounded-xl shadow-2xl overflow-hidden"> {/* Cabecera ROJA */}
+                <div className="p-6 text-center text-white"> {/* Texto Blanco en cabecera */}
+                    <div className="mb-3">
+                        <p className="text-5xl font-bold">{puntos ?? 0}</p>
+                        <p className="text-sm uppercase tracking-wide">Puntos</p>
                     </div>
-                    <h2 className="text-2xl font-semibold text-gray-800">
+                    <h2 className="text-2xl font-semibold">
                         {nombre}
                     </h2>
-                    <p className="text-sm text-gray-500">{usuarioId}</p>
+                    <p className="text-xs opacity-80">{usuarioId}</p>
                 </div>
 
-                {/* Sección de Puntos */}
-                <div className="mb-6 text-center p-4 bg-red-50 rounded-lg border border-red-100">
-                    <p className="text-3xl font-bold text-red-600">{puntos ?? 0}</p>
-                    <p className="text-sm text-gray-600 uppercase tracking-wide">Puntos</p>
-                </div>
-
-                {/* Sección de Emojis Atrapados */}
-                <div className="mb-8">
-                    <h3 className="text-lg font-medium text-gray-700 mb-3 text-center">Emojis Atrapados</h3>
-                    <div className="flex flex-wrap gap-3 justify-center min-h-[60px] bg-gray-100 p-3 rounded-lg border border-gray-200">
-                        {renderCollectedItems()}
+                <div className="bg-white p-6 rounded-b-xl text-gray-800"> {/* Contenido blanco, texto base oscuro */}
+                    <div className="mb-8">
+                        <h3 className="text-lg font-medium text-gray-900 mb-3 text-center"> {/* Texto oscuro */}
+                            Emojis Atrapados
+                        </h3>
+                        <div className="flex flex-wrap gap-3 justify-center min-h-[60px] bg-gray-100 p-3 rounded-lg border border-gray-200">
+                            {renderCollectedItems()}
+                        </div>
                     </div>
-                </div>
 
-                {/* Botones de Acción */}
-                <div className="flex flex-col space-y-3">
-                    <Button onClick={handlePlayClick} variant="primary" className="w-full py-3 text-base">
-                        ¡A Jugar! (Ir a AR)
-                    </Button>
-                    <Button onClick={handleLogoutClick} variant="secondary" className="w-full py-3 text-base">
-                        Cerrar Sesión
-                    </Button>
+                    <div className="flex flex-col space-y-3">
+                        <Button
+                            onClick={handlePlayClick}
+                            className="w-full py-3 text-lg bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+                        >
+                            ¡A Jugar!
+                        </Button>
+                        <Button
+                            onClick={handleLogoutClick}
+                            variant="secondary"
+                            className="w-full py-2.5 text-sm text-red-600 hover:bg-red-100 border border-red-200 hover:border-red-300"
+                        >
+                            Cerrar Sesión
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
     );
+
 }
 
 // --- Componente de Página Exportado ---

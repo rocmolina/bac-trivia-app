@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import { register } from '@/lib/services/api'; // Importar desde servicio API
+import { register } from '@/lib/services/api';
+import Image from "next/image";
 
 export default function RegisterPage() {
     const [nombre, setNombre] = useState('');
@@ -46,27 +47,58 @@ export default function RegisterPage() {
         }
     };
 
+    // return (
+    //     <div className="flex items-center justify-center min-h-screen">
+    //         <div className="p-8 max-w-md w-full bg-white rounded-lg shadow-md">
+    //             <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
+    //                 BAC Trivia - Registro
+    //             </h2>
+    //             <form onSubmit={handleSubmit} className="space-y-4">
+    //                 <Input label="Usuario" id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
+    //                 {error && <p className="text-sm text-red-600">{error}</p>}
+    //                 {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
+    //                 <Button type="submit" className="w-full" isLoading={isLoading} disabled={!!successMessage}>
+    //                     Registrarme
+    //                 </Button>
+    //                 <p className="text-sm text-center text-gray-600">
+    //                     ¿Ya tienes cuenta?{' '}
+    //                     <a href="/login" className="font-medium text-red-600 hover:text-red-500">
+    //                         Inicia sesión
+    //                     </a>
+    //                 </p>
+    //             </form>
+    //         </div>
+    //     </div>
+    // );
+
     return (
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-screen bg-white text-gray-800 dark:text-gray-800">
+            <div className="absolute top-8 sm:top-12">
+                <Image src="/logos/bactrivia_logo.svg" alt="BAC Trivia Logo" width={180} height={60} priority />
+            </div>
             <div className="p-8 max-w-md w-full bg-white rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
+                <h2 className="text-2xl font-bold text-center text-gray-400 mb-6">
                     BAC Trivia - Registro
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <Input label="Usuario" id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
                     {error && <p className="text-sm text-red-600">{error}</p>}
                     {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
-                    <Button type="submit" className="w-full" isLoading={isLoading} disabled={!!successMessage}>
+                    <Button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3" isLoading={isLoading} disabled={!!successMessage}>
                         Registrarme
                     </Button>
                     <p className="text-sm text-center text-gray-600">
                         ¿Ya tienes cuenta?{' '}
-                        <a href="/login" className="font-medium text-red-600 hover:text-red-500">
+                        <a href="/login" className="font-medium text-red-600 hover:text-red-700">
                             Inicia sesión
                         </a>
                     </p>
                 </form>
             </div>
+            <div className="absolute bottom-4 right-4">
+                <Image src="/logos/bac_logo.png" alt="BAC Logo" width={80} height={20} />
+            </div>
         </div>
     );
+
 }
