@@ -120,6 +120,13 @@ export interface SetAppStatusPayload {
     isActive: boolean;
 }
 
+// --- Tipo para la respuesta de updateUserFromAdmin ---
+export interface UpdateUserAdminResponse {
+    message: string;
+    updatedNombre: string;
+    updatedUsuarioId: string; // El usuarioId, incluso si no cambió
+}
+
 // --- Funciones API Exportadas ---
 export const register = async (userData: { nombre: string; apellido: string; cedula: string }): Promise<RegisterResponse> => {
     const endpoint = '/registerUser';
@@ -242,5 +249,27 @@ export const setAppStatusApi = async (payload: SetAppStatusPayload): Promise<{ m
     } catch (error: any) {
         console.error('API Set App Status Error:', error.response?.data || error.message);
         throw error.response?.data || error;
+    }
+};
+
+// --- Función API para Actualizar Usuario desde Admin ---
+export const updateUserFromAdminApi = async (
+    userFirestoreId: string,
+    newNombre: string
+): Promise<UpdateUserAdminResponse> => {
+    const endpoint = '/updateUserFromAdmin';
+    const payload = { userFirestoreId, newNombre };
+    // NOTA: Idealmente, esta llamada debería estar autenticada.
+    // El backend debería verificar el token/sesión del admin.
+    // console.log('API Update User (Admin) Request:', apiClient.defaults.baseURL + endpoint, payload);
+    try {
+        const response = await apiClient.post<UpdateUserAdminResponse>(endpoint, payload);
+        // console.log('API Update User (Admin) Response:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('API Update User (Admin) Error:', error.response?.data || error.message);
+        // Asegurarse de lanzar un objeto de error que el componente pueda interpretar
+        const errorData = error.response?.data || { message: error.message, error: "Error de red" };
+        throw errorData;
     }
 };
