@@ -199,7 +199,7 @@ function AdminDashboardContent() {
                             <tr>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider sticky top-0 bg-red-700 z-10">Usuario ID</th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider sticky top-0 bg-red-700 z-10">Puntos</th>
-                                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider sticky top-0 bg-red-700 z-10">Editar</th>
+                                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider sticky top-0 bg-red-700 z-10">More</th>
                             </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -216,7 +216,7 @@ function AdminDashboardContent() {
                                                 size="sm"
                                                 className="!px-4 !py-1.5 !text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm"
                                             >
-                                                Editar
+                                                ...
                                             </Button>
                                         </td>
                                     </tr>
