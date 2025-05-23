@@ -52,7 +52,7 @@ function TriviaResultContent() {
     const message = isSuccess ? `Has Ganado +${pointsGained} puntos!` : "Respuesta Equivocada";
     const bgColor = isSuccess ? 'bg-red-600' : 'bg-red-900'; // Similar a las imágenes de ejemplo
     const textColor = 'text-white';
-    const imageContainerBg = isSuccess ? 'bg-blue-grey-100' : 'bg-red-100';
+    const imageContainerBg = isSuccess ? 'bg-teal-100' : 'bg-red-100';
     const imageSize = 180; // Tamaño de la imagen SVG de categoría
 
     return (
@@ -70,10 +70,10 @@ function TriviaResultContent() {
                     />
                 </div>
 
-                <h1 className={`text-4xl sm:text-5xl font-bold mb-3 ${isSuccess ? 'text-blue-grey-700' : 'text-red-700'}`}>
+                <h1 className={`text-4xl sm:text-5xl font-bold mb-3 ${isSuccess ? 'text-teal-700' : 'text-red-700'}`}>
                     {title}
                 </h1>
-                <p className={`text-xl sm:text-2xl mb-8 ${isSuccess ? 'text-blue-grey-600' : 'text-red-600'}`}>
+                <p className={`text-xl sm:text-2xl mb-8 ${isSuccess ? 'text-teal-600' : 'text-red-600'}`}>
                     {message}
                 </p>
 
