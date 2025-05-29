@@ -80,7 +80,7 @@ function TriviaResultContent() {
                 <div className="space-y-4">
                     <Button
                         onClick={() => router.push('/play')}
-                        className="w-full py-3 text-lg bg-yellow-400 hover:bg-yellow-500 text-black font-semibold shadow-md"
+                        className="w-full py-3 text-lg bg-red-600 hover:bg-red-700 text-black font-semibold shadow-md"
                     >
                         Volver a Jugar
                     </Button>

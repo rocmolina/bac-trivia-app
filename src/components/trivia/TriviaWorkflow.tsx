@@ -298,7 +298,7 @@ export default function TriviaWorkflow() {
                             onClick={handleSubmitAnswer}
                             disabled={selectedOptionIndex === null || isSubmitting || !!errorSubmitting}
                             isLoading={isSubmitting}
-                            className="w-full text-lg py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+                            className="w-full text-lg py-3 bg-red-600 hover:bg-red-700 text-black font-semibold"
                         >
                             Enviar Respuesta
                         </Button>
