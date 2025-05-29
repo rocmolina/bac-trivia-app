@@ -76,7 +76,7 @@ export default function LoginPage() {
     // );
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-white text-gray-800 dark:text-gray-800">
+        <div className="flex items-center justify-center min-h-screen bg-red-600 text-gray-800 dark:text-gray-800">
             <div className="absolute top-8 sm:top-12">
                 <Image src="/logos/bactrivia_logo.svg" alt="BAC Trivia Logo" width={140} height={40} priority />
             </div>
@@ -96,7 +96,7 @@ export default function LoginPage() {
                         error={error && error.includes('UsuarioID') ? error : undefined}
                     />
                     {error && <p className="text-sm text-red-600">{error}</p>}
-                    <Button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-500 font-bold py-3" isLoading={isLoading}>
+                    <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-gray-500 font-bold py-3" isLoading={isLoading}>
                         Ingresar
                     </Button>
                     <p className="text-sm text-center text-gray-600">

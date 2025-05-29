@@ -72,7 +72,7 @@ export default function RegisterPage() {
     // );
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-white text-gray-800 dark:text-gray-800">
+        <div className="flex items-center justify-center min-h-screen bg-red-600 text-gray-800 dark:text-gray-800">
             <div className="absolute top-8 sm:top-12">
                 <Image src="/logos/bactrivia_logo.svg" alt="BAC Trivia Logo" width={140} height={40} priority />
             </div>
@@ -84,7 +84,7 @@ export default function RegisterPage() {
                     <Input label="Nuevo Usuario" id="nombre" type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
                     {error && <p className="text-sm text-red-600">{error}</p>}
                     {successMessage && <p className="text-sm text-green-600">{successMessage}</p>}
-                    <Button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-3" isLoading={isLoading} disabled={!!successMessage}>
+                    <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-black font-semibold py-3" isLoading={isLoading} disabled={!!successMessage}>
                         Registrarme
                     </Button>
                     <p className="text-sm text-center text-gray-600">

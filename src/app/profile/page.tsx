@@ -49,21 +49,12 @@ function ProfileContent() {
     const CategoryDisplay: React.FC<{ category: typeof CATEGORIES[number] }> = ({ category }) => {
         const pointsForThisCategory = calculatePointsForCategory(category.id);
         const imageSize = 96; // Tamaño de la imagen SVG (ej. w-16 h-16) - un poco más grande
+        const categoryName = category.name === "Carro" || category.name === "Casa" ? category.name+" BAC" : category.name;
 
         return (
             <div className="flex flex-col items-center p-3 bg-gray-100 rounded-lg shadow-md w-full sm:w-auto">
                 {/* Puntaje por categoría */}
-                <div
-                    className="relative mb-2 text-2xl font-bold text-red-600"
-                    // Estilo para el "borde oscuro" del texto (simulado con text-shadow)
-                    // Tailwind no tiene utilidades de text-shadow por defecto, se podría añadir o usar CSS.
-                    // Una forma simple con CSS (necesitaría estar en un archivo .css global o módulo CSS):
-                    // style={{textShadow: '0px 0px 1px black, 0px 0px 1px black'}} // Ejemplo de sombra sutil
-                    // O, para un borde más simple, podemos usar múltiples sombras.
-                    // Esto puede ser difícil de lograr bien con solo Tailwind.
-                    // Alternativa: un div de fondo oscuro detrás del texto, o un span con borde.
-                    // Por ahora, solo color rojo y negrita.
-                >
+                <div className="relative mb-2 text-2xl font-bold text-black">
                     {pointsForThisCategory}
                 </div>
                 {/* Imagen de la categoría */}
@@ -76,31 +67,31 @@ function ProfileContent() {
                         onError={() => { console.warn(`Error al cargar SVG: ${category.svgUrl}`); }}
                     />
                 </div>
-                <p className="mt-2 text-xs text-center text-gray-700 font-medium">{category.name}</p>
+                <p className="mt-2 text-xs text-center text-gray-700 font-medium">{categoryName}</p>
             </div>
         );
     };
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-2 sm:p-4 relative">
-            <div className="absolute top-4 right-4 z-10">
-                <Image
-                    src="/logos/bactrivia_logo.svg"
-                    alt="BAC Trivia Logo"
-                    width={100}
-                    height={35}
-                />
-            </div>
 
             <div className="w-full max-w-md bg-red-600 rounded-xl shadow-2xl overflow-hidden"> {/* Contenedor principal rojo */}
                 {/* Cabecera Roja */}
-                <div className="p-6 text-center text-white">
+                <div className="flex items-center justify-center rounded-t-xl">
+                    <Image
+                        src="/logos/bactrivia_logo.svg"
+                        alt="BAC Trivia Logo"
+                        width={80}
+                        height={35}
+                    />
+                </div>
+
+                <div className="p-3 text-center text-white">
                     <div className="mb-3">
-                        <p className="text-5xl font-bold">{puntosTotales ?? 0}</p>
-                        <p className="text-sm uppercase tracking-wide">Puntos Totales</p>
+                        <p className="text-3xl font-bold">{puntosTotales ?? 0} pts</p>
                     </div>
                     <h2 className="text-2xl font-semibold">
-                        {nombre} {apellido}
+                        {nombre}
                     </h2>
                     <p className="text-xs opacity-80">{usuarioId}</p>
                 </div>
@@ -109,7 +100,7 @@ function ProfileContent() {
                 <div className="bg-white p-6 rounded-b-xl text-gray-800">
                     {/* Sección de Puntajes por Categoría */}
                     <div className="mb-8">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4 text-center">
                             Puntos por Categoría
                         </h3>
                         {/* Grid para las 4 categorías */}
@@ -124,7 +115,7 @@ function ProfileContent() {
                     <div className="flex flex-col space-y-3 mt-6">
                         <Button
                             onClick={handlePlayClick}
-                            className="w-full py-3 text-lg bg-yellow-400 hover:bg-yellow-500 text-black font-semibold"
+                            className="w-full py-3 text-lg bg-red-600 hover:bg-red-700 text-black font-semibold"
                         >
                             ¡A Jugar!
                         </Button>
