@@ -1,7 +1,7 @@
 // src/components/ar/ARCoreExperience.tsx
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback, Suspense } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Canvas, useThree, useFrame, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useRouter } from 'next/navigation';
@@ -38,8 +38,11 @@ const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
             }
         }
     }, [visible, matrix]);
+
+    if (!visible) return null; // Optimization: don't render if not visible
+
     return (
-        <mesh ref={ref} visible={false} matrixAutoUpdate={false} rotation-x={-Math.PI / 2}>
+        <mesh ref={ref} matrixAutoUpdate={false} rotation-x={-Math.PI / 2}>
             <ringGeometry args={[0.08, 0.1, 32]} />
             <meshBasicMaterial color="lime" opacity={0.90} transparent={true} depthTest={false} />
         </mesh>
@@ -63,28 +66,32 @@ const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelectFallback, q
     }, [matrix]);
 
     const handleClick = (e: ThreeEvent<PointerEvent>) => {
-        e.stopPropagation();
-        console.log(`PlacedObject (SVG): onClick INTERNO. QR: ${qrDataForDebug}.`);
+        e.stopPropagation(); // Prevent event from bubbling up if needed
+        console.log(`PlacedObject (SVG): onClick INTERNO. QR: ${qrDataForDebug}. Calling onSelectFallback.`);
         onSelectFallback();
     };
 
     const categoryName = qrDataForDebug ? getCategoryFromQrData(qrDataForDebug) : null;
     const svgUrl = categoryName ? `/icons/${categoryName}.svg` : '/icons/default.svg';
-    const planeSize = 0.3;
+    const planeSize = 0.3; // Size of the plane in AR world units
 
     return (
         <mesh
             ref={meshRef}
-            matrixAutoUpdate={false}
+            matrixAutoUpdate={false} // Matrix is applied from props
             onClick={handleClick}
-            rotation-x={-Math.PI}
+            // The rotation here is to orient the plane. If hitTest matrix provides full orientation, this might need adjustment.
+            // For a typical hit test on a horizontal surface, the plane (image) might need to be rotated to face the camera or upwards.
+            // -Math.PI should make it face "up" if placed on a floor relative to its local Y being up.
+            // If it appears upside down or incorrectly rotated, this is a key place to adjust.
+            rotation-x={-Math.PI / 2} // Often needed to make a plane lay flat from default Z-up
         >
             <planeGeometry args={[planeSize, planeSize]} />
             <React.Suspense fallback={<meshBasicMaterial color="lightgray" wireframe={true} />}>
                 <DreiImage
                     url={svgUrl}
-                    transparent
-                    toneMapped={false}
+                    transparent // Important for SVGs with transparent backgrounds
+                    toneMapped={false} // Often better for UI elements / icons
                 />
             </React.Suspense>
         </mesh>
@@ -104,14 +111,13 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
     const [hitTestSource, setHitTestSource] = useState<XRHitTestSource | null>(null);
     const [referenceSpace, setReferenceSpace] = useState<XRReferenceSpace | null>(null);
     const reticleMatrix = useRef(new THREE.Matrix4());
-    // Renamed for clarity: this state reflects if hit-test found a surface
     const [isHitTestSurfaceFound, setIsHitTestSurfaceFound] = useState(false);
     const [objects, setObjects] = useState<{ id: string; matrix: THREE.Matrix4; qrData: string }[]>([]);
 
     // --- Session Setup and Teardown Effect ---
     useEffect(() => {
         let isMounted = true;
-        console.log("ARScene: Mounting and configuring session:", activeSession);
+        console.log("ARScene: Mounting and configuring session:", activeSession ? activeSession : "No session");
         gl.xr.enabled = true;
         gl.xr.setSession(activeSession)
             .then(async () => {
@@ -144,15 +150,18 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
         });
 
         const handleSessionEnd = () => {
-            if (!isMounted) return;
+            if (!isMounted) return; // Guard against calls after unmount
             console.log("ARScene: XRSession 'end' event received.");
             if (hitTestSource?.cancel) {
                 try { hitTestSource.cancel(); } catch (e) { console.warn("ARScene: Error cancelling hitTestSource on session end:", e); }
             }
             setHitTestSource(null);
             setReferenceSpace(null);
-            setObjects([]); // Clear placed objects
-            setIsHitTestSurfaceFound(false); // Reset hit-test state
+            setObjects([]);
+            setIsHitTestSurfaceFound(false);
+            // onExit will be called by PlayPageContent or similar logic when session actually ends
+            // This handler is for the session's own 'end' event.
+            // We call onExit here to ensure PlayPageContent is notified to reset its state.
             onExit();
         };
         activeSession.addEventListener('end', handleSessionEnd);
@@ -161,43 +170,52 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
             isMounted = false;
             console.log("ARScene: Unmounting.");
             activeSession.removeEventListener('end', handleSessionEnd);
-            if (hitTestSource?.cancel) {
+            if (hitTestSource?.cancel) { // Ensure hitTestSource is cancelled on unmount
                 try { hitTestSource.cancel(); } catch (e) { console.warn("ARScene: Error cancelling hitTestSource on unmount:", e); }
             }
         };
-    }, [activeSession, gl, onExit]);
+    }, [activeSession, gl, onExit]); // onExit is a dependency now
 
     // --- Hit Test Source Setup Effect ---
     useEffect(() => {
-        if (!activeSession || !referenceSpace || hitTestSource) { // Do not run if already have one or no session/refspace
-            if (hitTestSource && (!activeSession || !referenceSpace)) { // Clean up if session/refspace lost
-                try { hitTestSource.cancel(); } catch(e) { console.warn("ARScene: Error cancelling hitTestSource due to lost session/refSpace", e); }
+        if (!activeSession || !referenceSpace) {
+            if (hitTestSource) { // If session/refSpace lost, cleanup existing hitTestSource
+                try { hitTestSource.cancel(); } catch(e) { console.warn("ARScene: Error cancelling stale hitTestSource", e); }
                 setHitTestSource(null);
             }
             return;
         }
+        // If we already have a hitTestSource, and session/refSpace are still valid, don't re-create
+        if (hitTestSource) return;
+
         let isEffectMounted = true;
         const setupHitTest = async () => {
             try {
                 const viewerSpace = await activeSession.requestReferenceSpace('viewer');
-                if (!isEffectMounted || !activeSession.requestHitTestSource) return;
+                if (!isEffectMounted || !activeSession.requestHitTestSource) return; // Guard
                 const source = await activeSession.requestHitTestSource({ space: viewerSpace });
                 if (source && isEffectMounted) {
                     console.log("ARScene: Hit test source obtained.");
                     setHitTestSource(source);
                 } else if (!isEffectMounted && source?.cancel) {
-                    source.cancel();
+                    source.cancel(); // Cleanup if unmounted before set
                 }
             } catch (err) {
                 console.error('ARScene: Error configuring HitTest:', err);
-                if(isEffectMounted) setHitTestSource(null); // Ensure it's null on error
+                if(isEffectMounted) setHitTestSource(null);
             }
         };
         setupHitTest();
         return () => {
             isEffectMounted = false;
+            // Cleanup of hitTestSource is typically handled by its .cancel() method directly
+            // or when the session ends. If it's still active here, cancel it.
+            if (hitTestSource) { // && hitTestSource.cancel) {
+                try { setHitTestSource(null); } catch (e) { console.warn("ARScene: Error cancelling hitTestSource in effect cleanup", e); }
+                // setHitTestSource(null); // This would be set by the session end or main cleanup
+            }
         };
-    }, [activeSession, referenceSpace]);
+    }, [activeSession, referenceSpace, hitTestSource]); // Added hitTestSource to dependencies to manage its lifecycle
 
 
     // --- Frame Loop for Hit-Testing ---
@@ -231,22 +249,39 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
             console.log("ARScene: Object already placed. Attempting to navigate to trivia.");
             const currentObject = objects[0];
             if (currentObject && currentObject.qrData) {
-                console.log(`ARScene: Navigating to /trivia with qrCodeData: ${currentObject.qrData}`);
-                if (router) {
-                    router.push(`/trivia?qrCodeData=${encodeURIComponent(currentObject.qrData)}`);
-                } else {
+                const targetQrData = currentObject.qrData;
+                console.log(`ARScene: Preparing to navigate to /trivia with qrCodeData: ${targetQrData}.`);
+
+                if (!router) {
                     console.error("ARScene: Router not available! Cannot navigate.");
                     alert("Error: Router not available for navigation.");
+                    return;
                 }
+
+                // Defer navigation slightly using setTimeout to allow the current event cycle to complete.
+                // This can help with stability on some mobile browsers/WebViews, especially with XR.
+                setTimeout(() => {
+                    console.log(`ARScene: Executing router.push via setTimeout to /trivia?qrCodeData=${encodeURIComponent(targetQrData)}`);
+                    try {
+                        router.push(`/trivia?qrCodeData=${encodeURIComponent(targetQrData)}`);
+                        // After router.push, the browser will handle page transition.
+                        // The AR session should be automatically ended by the browser as the page unloads or changes.
+                        // The 'end' event listener on the XRSession instance is responsible for final cleanup
+                        // (like calling onExit which resets PlayPageContent).
+                    } catch (e) {
+                        console.error("ARScene: Error during router.push:", e);
+                        alert("Error: Could not navigate to trivia page.");
+                    }
+                }, 0); // 0ms delay
+
             } else {
                 console.error("ARScene: Cannot navigate, current object or its qrData is missing.");
                 alert("Error: Object information missing for trivia.");
             }
-            return;
+            return; // Exit after initiating navigation
         }
 
         // No object placed yet, this is the first tap. Place the object.
-        // Check isHitTestSurfaceFound (updated by useFrame)
         if (isHitTestSurfaceFound && reticleMatrix.current) {
             console.log(`ARScene: Reticle indicates surface found. Placing the object with qrData: ${qrCodeData}`);
             const newObject = {
@@ -254,8 +289,8 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
                 matrix: reticleMatrix.current.clone(),
                 qrData: qrCodeData
             };
-            setObjects([newObject]);
-            // The reticle will be hidden on the next render pass because objects.length will be > 0
+            setObjects([newObject]); // This will trigger a re-render
+            // Reticle will be hidden on the next render pass because objects.length will be > 0
         } else {
             console.warn("ARScene: Cannot place object - hit-test surface not found or reticle matrix not ready.");
         }
@@ -280,7 +315,8 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
         <>
             <ambientLight intensity={1.0} />
             <directionalLight position={[1, 4, 2.5]} intensity={1.2} />
-            <Reticle visible={shouldRenderReticle} matrix={shouldRenderReticle ? reticleMatrix.current : null} />
+            {/* Conditionally render Reticle based on shouldRenderReticle */}
+            {shouldRenderReticle && <Reticle visible={true} matrix={reticleMatrix.current} />}
 
             {objects.map((obj) => (
                 <PlacedObject
@@ -288,8 +324,6 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
                     matrix={obj.matrix}
                     qrDataForDebug={obj.qrData}
                     onSelectFallback={() => {
-                        // This fallback is if the PlacedObject's internal onClick is ever triggered.
-                        // The main navigation path is through placeObjectOrNavigate.
                         console.warn(`ARScene: PlacedObject onSelectFallback invoked for ${obj.qrData}. This should not be the primary navigation trigger.`);
                     }}
                 />
@@ -306,11 +340,8 @@ interface ARCoreExperienceProps {
 }
 const ARCoreExperience: React.FC<ARCoreExperienceProps> = ({ activeSession, qrCodeData, onExit }) => {
     const handleOverlayClick = useCallback(() => {
-        // This click on the overlay div dispatches the 'select' event to the active AR session.
-        // This is the primary mechanism for user taps.
         console.log("ARCoreExperience: Overlay onClick. Dispatching 'select' event to XR session.");
         if (activeSession && typeof activeSession.dispatchEvent === 'function') {
-            // Create a simple event, as XRSession's 'select' doesn't typically carry detailed data itself.
             const selectEvent = new Event('select');
             activeSession.dispatchEvent(selectEvent);
         } else {
@@ -320,11 +351,9 @@ const ARCoreExperience: React.FC<ARCoreExperienceProps> = ({ activeSession, qrCo
 
     return (
         <>
-            {/* The Canvas for 3D rendering */}
             <Canvas gl={{ antialias: true, alpha: true }} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1 }} camera={{ fov: 70, near: 0.01, far: 20 }}>
                 <ARScene activeSession={activeSession} qrCodeData={qrCodeData} onExit={onExit} />
             </Canvas>
-            {/* This div captures screen taps and forwards them as 'select' events to the AR session. */}
             <div onClick={handleOverlayClick} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 2, WebkitTapHighlightColor: 'transparent' }} />
         </>
     );
