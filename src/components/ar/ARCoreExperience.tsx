@@ -1,35 +1,31 @@
 // src/components/ar/ARCoreExperience.tsx
-// MODIFICADO: Se maneja el "segundo tap" dentro de placeObject para navegar a la trivia.
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, Suspense } from 'react';
 import { Canvas, useThree, useFrame, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useRouter } from 'next/navigation';
 import { Image as DreiImage } from '@react-three/drei';
 
-// Helper para obtener el nombre del archivo SVG basado en la categoría del qrCodeData
+// Helper function (getCategoryFromQrData) remains the same
 const getCategoryFromQrData = (qrData: string): string | null => {
     if (!qrData) return null;
-    // Asumiendo formato "TOTEMXX_Categoria_INFO"
     const parts = qrData.toLowerCase().split('_');
     if (parts.length >= 2) {
-        // Intenta mapear a nombres de archivo SVG esperados
-        // (ej: "ahorro" -> "ahorro.svg", "tarjeta" -> "tarjeta.svg", "casa" -> "casa.svg", "carro" -> "carro.svg")
         const categoryPart = parts[1];
         if (categoryPart.includes('ahorro')) return 'ahorro';
         if (categoryPart.includes('tarjeta')) return 'tarjeta';
         if (categoryPart.includes('casa')) return 'casa';
         if (categoryPart.includes('carro')) return 'carro';
-        return categoryPart; // fallback, puede no coincidir con un archivo
+        return categoryPart;
     }
     return null;
 };
 
-// --- Componente Retícula ---
+// --- Componente Retícula (ReticleProps and Reticle component remain the same) ---
 interface ReticleProps {
     visible: boolean;
-    matrix: THREE.Matrix4 | null;
+    matrix: THREE.Matrix4 | null; // Allow null for when not visible
 }
 const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
     const ref = useRef<THREE.Mesh>(null);
@@ -39,8 +35,6 @@ const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
             if (ref.current.visible && matrix) {
                 ref.current.matrixAutoUpdate = false;
                 ref.current.matrix.copy(matrix);
-            } else if (ref.current.visible && !matrix) {
-                ref.current.visible = false;
             }
         }
     }, [visible, matrix]);
@@ -52,16 +46,14 @@ const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
     );
 };
 
-// start new1
-// --- Componente PlacedObject MODIFICADO para mostrar SVG ---
+// --- Componente PlacedObject (PlacedObjectProps and PlacedObject component remain the same) ---
 interface PlacedObjectProps {
     matrix: THREE.Matrix4;
     onSelectFallback: () => void;
     qrDataForDebug?: string;
 }
 const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelectFallback, qrDataForDebug }) => {
-    const meshRef = useRef<THREE.Mesh>(null!); // Usamos Mesh para el objeto clickeable (el plano con la textura)
-    const [hovered, setHovered] = useState(false); // No usado actualmente para el SVG pero se puede mantener
+    const meshRef = useRef<THREE.Mesh>(null!);
 
     useEffect(() => {
         if (meshRef.current) {
@@ -77,232 +69,228 @@ const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelectFallback, q
     };
 
     const categoryName = qrDataForDebug ? getCategoryFromQrData(qrDataForDebug) : null;
-    const svgUrl = categoryName ? `/icons/${categoryName}.svg` : '/icons/default.svg'; // Tener un default.svg es buena idea
-
-    // Ajustar el tamaño del plano donde se mostrará el SVG
-    const planeSize = 0.3; // Metros en el mundo AR, ajustar según sea necesario
+    const svgUrl = categoryName ? `/icons/${categoryName}.svg` : '/icons/default.svg';
+    const planeSize = 0.3;
 
     return (
         <mesh
             ref={meshRef}
-            matrixAutoUpdate={false} // La matriz es aplicada desde props
+            matrixAutoUpdate={false}
             onClick={handleClick}
-            // La rotación aquí es para que el plano mire hacia arriba si la matriz del hit-test es identidad.
-            // La matriz del hit-test debería orientarlo correctamente. Si no, ajustar aquí.
-            rotation-x={-Math.PI} // Puede no ser necesario si la matriz de pose es correcta
+            rotation-x={-Math.PI}
         >
             <planeGeometry args={[planeSize, planeSize]} />
-            {/* Usamos DreiImage para cargar el SVG como textura.
-                Asegúrate que los SVGs tengan un fondo transparente si quieres que se vean como "emojis" flotantes.
-                O que el material del plano maneje la transparencia.
-            */}
             <React.Suspense fallback={<meshBasicMaterial color="lightgray" wireframe={true} />}>
                 <DreiImage
                     url={svgUrl}
-                    transparent // Asumiendo que los SVGs tienen transparencia o queremos que el material lo sea
-                    // scale={[planeSize, planeSize, 1]} // El tamaño ya está en planeGeometry
-                    toneMapped={false} // A menudo mejor para UI/iconos
-                >
-                    {/* DreiImage crea su propio material, pero podemos intentar anidarlo o usar MeshBasicMaterial con map */}
-                    {/* <meshBasicMaterial transparent map={new THREE.TextureLoader().load(svgUrl)} /> */}
-                    {/* Lo anterior es más manual. DreiImage debería funcionar mejor. */}
-                </DreiImage>
+                    transparent
+                    toneMapped={false}
+                />
             </React.Suspense>
         </mesh>
     );
 };
-// end new1
 
-// // --- Componente Objeto Colocado (onClick ahora es menos crítico, pero lo mantenemos por si acaso) ---
-// interface PlacedObjectProps {
-//     matrix: THREE.Matrix4;
-//     onSelectFallback: () => void; // Renombrado para claridad, ya que el tap principal se maneja arriba
-//     qrDataForDebug?: string;
-// }
-// const PlacedObject: React.FC<PlacedObjectProps> = ({ matrix, onSelectFallback, qrDataForDebug }) => {
-//     const meshRef = useRef<THREE.Mesh>(null);
-//     const [hovered, setHovered] = useState(false);
-//     const [initialColor] = useState(() => new THREE.Color().setHex(Math.random() * 0xffffff));
-//
-//     useEffect(() => {
-//         if (meshRef.current) {
-//             meshRef.current.matrixAutoUpdate = false;
-//             meshRef.current.matrix.copy(matrix);
-//         }
-//     }, [matrix]);
-//
-//     const handleClick = (e: ThreeEvent<PointerEvent>) => {
-//         e.stopPropagation();
-//         console.log(`PlacedObject: onClick INTERNO. QR Data: ${qrDataForDebug}. Llamando a onSelectFallback.`);
-//         // alert(`PlacedObject INTERNO Tapped! QR: ${qrDataForDebug}`); // Ya no es la via principal
-//         onSelectFallback(); // Podría usarse si alguna vez el clic directo funciona mejor
-//     };
-//     const handlePointerOver = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(true); };
-//     const handlePointerOut = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(false); };
-//
-//     return (
-//         <mesh
-//             ref={meshRef}
-//             matrixAutoUpdate={false}
-//             onClick={handleClick} // Lo dejamos, pero el flujo principal ahora no depende de él.
-//             onPointerOver={handlePointerOver}
-//             onPointerOut={handlePointerOut}
-//             scale={hovered ? 0.22 : 0.20}
-//         >
-//             <boxGeometry args={[1, 1, 1]} />
-//             <meshStandardMaterial color={hovered ? 0xff00ff : initialColor} roughness={0.5} metalness={0.3}/>
-//         </mesh>
-//     );
-// };
 
 interface ARSceneProps {
     activeSession: XRSession;
     qrCodeData: string;
     onExit: () => void;
 }
+
 const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) => {
     const router = useRouter();
     const { gl } = useThree();
     const [hitTestSource, setHitTestSource] = useState<XRHitTestSource | null>(null);
     const [referenceSpace, setReferenceSpace] = useState<XRReferenceSpace | null>(null);
     const reticleMatrix = useRef(new THREE.Matrix4());
-    const [isReticleVisible, setIsReticleVisible] = useState(false);
+    // Renamed for clarity: this state reflects if hit-test found a surface
+    const [isHitTestSurfaceFound, setIsHitTestSurfaceFound] = useState(false);
     const [objects, setObjects] = useState<{ id: string; matrix: THREE.Matrix4; qrData: string }[]>([]);
 
-    // --- Configuración y limpieza de sesión (Sin cambios desde la última versión) ---
+    // --- Session Setup and Teardown Effect ---
     useEffect(() => {
         let isMounted = true;
-        // console.log("ARScene: Montado. Configurando sesión:", activeSession);
+        console.log("ARScene: Mounting and configuring session:", activeSession);
         gl.xr.enabled = true;
         gl.xr.setSession(activeSession)
             .then(async () => {
-                if(!isMounted) return;
-                // console.log("ARScene: Sesión XR establecida en renderer.");
+                if (!isMounted) return;
+                console.log("ARScene: XR session set on renderer.");
                 try {
                     const refSpace = await activeSession.requestReferenceSpace('local-floor');
-                    if(!isMounted) return; setReferenceSpace(refSpace); // console.log("ARScene: 'local-floor' reference space obtenido.");
+                    if (isMounted) {
+                        setReferenceSpace(refSpace);
+                        console.log("ARScene: 'local-floor' reference space obtained.");
+                    }
                 } catch (err) {
-                    // console.warn("ARScene: Falló 'local-floor', intentando 'local'.", err);
+                    console.warn("ARScene: 'local-floor' failed, trying 'local'.", err);
                     try {
-                        const refSpace = await activeSession.requestReferenceSpace('local');
-                        if(!isMounted) return; setReferenceSpace(refSpace); // console.log("ARScene: 'local' reference space obtenido.");
+                        const refSpaceLocal = await activeSession.requestReferenceSpace('local');
+                        if (isMounted) {
+                            setReferenceSpace(refSpaceLocal);
+                            console.log("ARScene: 'local' reference space obtained.");
+                        }
                     } catch (localErr) {
-                        // console.error("ARScene: Falló obtener cualquier reference space.", localErr);
-                        if(!isMounted) return; onExit();
+                        console.error("ARScene: Failed to get any reference space.", localErr);
+                        if (isMounted) onExit();
                     }
                 }
             }).catch(err => {
-                if(!isMounted) return; /*console.error("ARScene: Error fatal al establecer sesión.", err);*/ onExit();
-            });
+            if (isMounted) {
+                console.error("ARScene: Fatal error setting session.", err);
+                onExit();
+            }
+        });
+
         const handleSessionEnd = () => {
-            if(!isMounted) return; /*console.log("ARScene: Evento 'end' de XRSession.");*/
-            if (hitTestSource?.cancel) hitTestSource.cancel(); setHitTestSource(null); setReferenceSpace(null); onExit();
+            if (!isMounted) return;
+            console.log("ARScene: XRSession 'end' event received.");
+            if (hitTestSource?.cancel) {
+                try { hitTestSource.cancel(); } catch (e) { console.warn("ARScene: Error cancelling hitTestSource on session end:", e); }
+            }
+            setHitTestSource(null);
+            setReferenceSpace(null);
+            setObjects([]); // Clear placed objects
+            setIsHitTestSurfaceFound(false); // Reset hit-test state
+            onExit();
         };
         activeSession.addEventListener('end', handleSessionEnd);
-        return () => {
-            isMounted = false; /*console.log("ARScene: Desmontando.");*/
-            activeSession.removeEventListener('end', handleSessionEnd);
-        };
-    }, [activeSession, gl, onExit, hitTestSource]);
 
-    // --- Obtener hitTestSource (Sin cambios desde la última versión) ---
+        return () => {
+            isMounted = false;
+            console.log("ARScene: Unmounting.");
+            activeSession.removeEventListener('end', handleSessionEnd);
+            if (hitTestSource?.cancel) {
+                try { hitTestSource.cancel(); } catch (e) { console.warn("ARScene: Error cancelling hitTestSource on unmount:", e); }
+            }
+        };
+    }, [activeSession, gl, onExit]);
+
+    // --- Hit Test Source Setup Effect ---
     useEffect(() => {
-        if (!activeSession || !referenceSpace || hitTestSource) return;
+        if (!activeSession || !referenceSpace || hitTestSource) { // Do not run if already have one or no session/refspace
+            if (hitTestSource && (!activeSession || !referenceSpace)) { // Clean up if session/refspace lost
+                try { hitTestSource.cancel(); } catch(e) { console.warn("ARScene: Error cancelling hitTestSource due to lost session/refSpace", e); }
+                setHitTestSource(null);
+            }
+            return;
+        }
         let isEffectMounted = true;
         const setupHitTest = async () => {
             try {
                 const viewerSpace = await activeSession.requestReferenceSpace('viewer');
-                if(!isEffectMounted) return;
-                if (typeof activeSession.requestHitTestSource === 'function') {
-                    const source = await activeSession.requestHitTestSource({ space: viewerSpace });
-                    if(!isEffectMounted) { if(source?.cancel) source.cancel(); return; }
-                    if (source && isEffectMounted) setHitTestSource(source);
+                if (!isEffectMounted || !activeSession.requestHitTestSource) return;
+                const source = await activeSession.requestHitTestSource({ space: viewerSpace });
+                if (source && isEffectMounted) {
+                    console.log("ARScene: Hit test source obtained.");
+                    setHitTestSource(source);
+                } else if (!isEffectMounted && source?.cancel) {
+                    source.cancel();
                 }
-            } catch (err) { /* console.error('ARScene: Error al configurar HitTest:', err); */ }
+            } catch (err) {
+                console.error('ARScene: Error configuring HitTest:', err);
+                if(isEffectMounted) setHitTestSource(null); // Ensure it's null on error
+            }
         };
         setupHitTest();
-        return () => { isEffectMounted = false; };
-    }, [activeSession, referenceSpace, hitTestSource]);
+        return () => {
+            isEffectMounted = false;
+        };
+    }, [activeSession, referenceSpace]);
 
-    // --- Bucle de frame (Sin cambios desde la última versión) ---
-    useFrame(() => { // ... (sin cambios, actualiza reticleMatrix y isReticleVisible)
+
+    // --- Frame Loop for Hit-Testing ---
+    useFrame(() => {
         if (!gl.xr.isPresenting || !referenceSpace || !hitTestSource) {
-            if(isReticleVisible) setIsReticleVisible(false); return;
+            if (isHitTestSurfaceFound) setIsHitTestSurfaceFound(false);
+            return;
         }
-        const frame = gl.xr.getFrame(); if (!frame) return;
+        const frame = gl.xr.getFrame();
+        if (!frame) return;
         const results = frame.getHitTestResults(hitTestSource);
         if (results.length > 0) {
-            const hit = results[0]; const pose = hit.getPose(referenceSpace);
-            if (pose) { reticleMatrix.current.fromArray(pose.transform.matrix); if(!isReticleVisible) setIsReticleVisible(true); }
-            else { if(isReticleVisible) setIsReticleVisible(false); }
-        } else { if(isReticleVisible) setIsReticleVisible(false); }
+            const hit = results[0];
+            const pose = hit.getPose(referenceSpace);
+            if (pose) {
+                reticleMatrix.current.fromArray(pose.transform.matrix);
+                if (!isHitTestSurfaceFound) setIsHitTestSurfaceFound(true);
+            } else {
+                if (isHitTestSurfaceFound) setIsHitTestSurfaceFound(false);
+            }
+        } else {
+            if (isHitTestSurfaceFound) setIsHitTestSurfaceFound(false);
+        }
     });
 
-    // MODIFICADO: Lógica de `placeObject` para manejar el "segundo tap" y navegar
-    const placeObject = useCallback(() => {
-        console.log("ARScene: placeObject (listener de sesión 'select') llamado.");
+    // --- Object Placement and Navigation Logic ---
+    const placeObjectOrNavigate = useCallback(() => {
+        console.log("ARScene: 'select' event (tap) detected by placeObjectOrNavigate.");
 
-        if (objects.length > 0) {
-            // Un objeto ya está colocado. Este 'select' event es el "segundo tap" (o subsiguiente).
-            console.log("ARScene: Objeto ya colocado. Este tap AHORA NAVEGARÁ a la trivia.");
-            const currentObject = objects[0]; // Asumimos que solo hay un objeto relevante
-
+        if (objects.length > 0) { // An object is already placed, this is the second tap.
+            console.log("ARScene: Object already placed. Attempting to navigate to trivia.");
+            const currentObject = objects[0];
             if (currentObject && currentObject.qrData) {
-                console.log(`ARScene: Navegando a /trivia con qrCodeData: ${currentObject.qrData}`);
+                console.log(`ARScene: Navigating to /trivia with qrCodeData: ${currentObject.qrData}`);
                 if (router) {
                     router.push(`/trivia?qrCodeData=${encodeURIComponent(currentObject.qrData)}`);
                 } else {
-                    console.error("ARScene: ¡Router no disponible! No se puede navegar.");
-                    alert("Error: Router no disponible para navegar a la trivia.");
+                    console.error("ARScene: Router not available! Cannot navigate.");
+                    alert("Error: Router not available for navigation.");
                 }
             } else {
-                console.error("ARScene: No se puede navegar, falta el objeto actual o su qrData.");
-                alert("Error: No se encontró información del objeto para la trivia.");
+                console.error("ARScene: Cannot navigate, current object or its qrData is missing.");
+                alert("Error: Object information missing for trivia.");
             }
-            return; // Importante: Salir después de manejar la navegación
+            return;
         }
 
-        // Si no hay objetos, es el primer tap: colocar el objeto
-        if (isReticleVisible && reticleMatrix.current) {
-            console.log(`ARScene: Retícula visible, colocando el ÚNICO objeto con qrData: ${qrCodeData}`);
-            setObjects([
-                { id: THREE.MathUtils.generateUUID(), matrix: reticleMatrix.current.clone(), qrData: qrCodeData },
-            ]);
+        // No object placed yet, this is the first tap. Place the object.
+        // Check isHitTestSurfaceFound (updated by useFrame)
+        if (isHitTestSurfaceFound && reticleMatrix.current) {
+            console.log(`ARScene: Reticle indicates surface found. Placing the object with qrData: ${qrCodeData}`);
+            const newObject = {
+                id: THREE.MathUtils.generateUUID(),
+                matrix: reticleMatrix.current.clone(),
+                qrData: qrCodeData
+            };
+            setObjects([newObject]);
+            // The reticle will be hidden on the next render pass because objects.length will be > 0
         } else {
-            console.warn("ARScene: No se puede colocar objeto (retícula no visible o matriz no lista).");
+            console.warn("ARScene: Cannot place object - hit-test surface not found or reticle matrix not ready.");
         }
-    }, [objects, isReticleVisible, qrCodeData, router]); // <<-- AÑADIR 'objects' y 'router' a las dependencias
+    }, [objects, isHitTestSurfaceFound, qrCodeData, router]); // Dependencies for the callback
 
-    // Listener para el evento 'select' de la sesión (Sin cambios)
+    // --- Event Listener for Taps ---
     useEffect(() => {
         if (activeSession && gl.xr.isPresenting) {
-            activeSession.addEventListener('select', placeObject);
+            console.log("ARScene: Adding 'select' event listener to AR session.");
+            activeSession.addEventListener('select', placeObjectOrNavigate);
             return () => {
-                activeSession.removeEventListener('select', placeObject);
+                console.log("ARScene: Removing 'select' event listener from AR session.");
+                activeSession.removeEventListener('select', placeObjectOrNavigate);
             };
         }
-    }, [activeSession, placeObject, gl.xr.isPresenting]); // placeObject ahora depende de 'objects' y 'router'
+    }, [activeSession, placeObjectOrNavigate, gl.xr.isPresenting]);
+
+    // Determine if the reticle should be rendered
+    const shouldRenderReticle = isHitTestSurfaceFound && objects.length === 0;
 
     return (
         <>
             <ambientLight intensity={1.0} />
-            <directionalLight position={[1, 4, 2.5]} intensity={1.2} castShadow={true} />
-            <Reticle visible={isReticleVisible} matrix={reticleMatrix.current} />
+            <directionalLight position={[1, 4, 2.5]} intensity={1.2} />
+            <Reticle visible={shouldRenderReticle} matrix={shouldRenderReticle ? reticleMatrix.current : null} />
 
             {objects.map((obj) => (
                 <PlacedObject
                     key={obj.id}
                     matrix={obj.matrix}
                     qrDataForDebug={obj.qrData}
-                    // La prop onSelect ahora es más un fallback, ya que el flujo principal
-                    // de navegación se maneja en placeObject.
                     onSelectFallback={() => {
-                        console.warn(`ARScene: PlacedObject onSelectFallback invocado para ${obj.qrData}, pero la navegación principal debería ocurrir en placeObject.`);
-                        // Podrías decidir si quieres que esto también navegue como un respaldo,
-                        // o simplemente sea para logging. Por ahora, lo dejamos como un log.
-                        // if (router) {
-                        // router.push(`/trivia?qrCodeData=${encodeURIComponent(obj.qrData)}`);
-                        // }
+                        // This fallback is if the PlacedObject's internal onClick is ever triggered.
+                        // The main navigation path is through placeObjectOrNavigate.
+                        console.warn(`ARScene: PlacedObject onSelectFallback invoked for ${obj.qrData}. This should not be the primary navigation trigger.`);
                     }}
                 />
             ))}
@@ -310,28 +298,34 @@ const ARScene: React.FC<ARSceneProps> = ({ activeSession, qrCodeData, onExit }) 
     );
 };
 
-// --- Componente Principal Envoltorio (ARCoreExperience) --- (Sin cambios)
+// --- ARCoreExperience Wrapper Component (remains the same) ---
 interface ARCoreExperienceProps {
     activeSession: XRSession;
     qrCodeData: string;
     onExit: () => void;
 }
 const ARCoreExperience: React.FC<ARCoreExperienceProps> = ({ activeSession, qrCodeData, onExit }) => {
-    const handleOverlayClick = () => {
-        // console.log("ARCoreExperience: Overlay onClick. Despachando evento 'select' a la sesión XR.");
+    const handleOverlayClick = useCallback(() => {
+        // This click on the overlay div dispatches the 'select' event to the active AR session.
+        // This is the primary mechanism for user taps.
+        console.log("ARCoreExperience: Overlay onClick. Dispatching 'select' event to XR session.");
         if (activeSession && typeof activeSession.dispatchEvent === 'function') {
-            const evt = new Event('select');
-            activeSession.dispatchEvent(evt);
+            // Create a simple event, as XRSession's 'select' doesn't typically carry detailed data itself.
+            const selectEvent = new Event('select');
+            activeSession.dispatchEvent(selectEvent);
         } else {
-            // console.warn("ARCoreExperience: No se puede despachar 'select'. Sesión no activa o dispatchEvent no disponible.");
+            console.warn("ARCoreExperience: Cannot dispatch 'select'. Session not active or dispatchEvent not available.");
         }
-    };
+    }, [activeSession]);
+
     return (
         <>
+            {/* The Canvas for 3D rendering */}
             <Canvas gl={{ antialias: true, alpha: true }} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 1 }} camera={{ fov: 70, near: 0.01, far: 20 }}>
                 <ARScene activeSession={activeSession} qrCodeData={qrCodeData} onExit={onExit} />
             </Canvas>
-            <div onClick={handleOverlayClick} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 2 }} />
+            {/* This div captures screen taps and forwards them as 'select' events to the AR session. */}
+            <div onClick={handleOverlayClick} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 2, WebkitTapHighlightColor: 'transparent' }} />
         </>
     );
 };
