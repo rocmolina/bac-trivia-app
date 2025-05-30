@@ -73,7 +73,7 @@ function ProfileContent() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-2 sm:p-4 relative">
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-1 sm:p-2 relative">
 
             <div className="w-full max-w-md bg-red-600 rounded-xl shadow-2xl overflow-hidden"> {/* Contenedor principal rojo */}
                 {/* Cabecera Roja */}
