@@ -37,6 +37,7 @@ export default function TriviaWorkflow() {
 
     useEffect(() => {
         const qrCodeDataFromParams = searchParams.get('qrCodeData');
+        console.log("TriviaWorkflow: qrCodeDataFromParams:", qrCodeDataFromParams);
         if (!userFirestoreId) {
             setErrorLoading("Error de usuario. Intenta iniciar sesión de nuevo.");
             setIsLoading(false);
