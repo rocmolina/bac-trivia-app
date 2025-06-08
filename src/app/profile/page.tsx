@@ -32,11 +32,8 @@ function ProfileContent() {
 
   if (!usuarioId && typeof window !== "undefined") {
     return (
-      <div
-        className="flex items-center justify-center min-h-screen"
-        data-oid="7d6-nk4"
-      >
-        <p data-oid="2y2v-2n">Cargando perfil...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Cargando perfil...</p>
       </div>
     );
   }
@@ -66,15 +63,11 @@ function ProfileContent() {
         : category.name;
 
     return (
-      <div
-        className="flex flex-col items-center justify-center rounded-lg shadow-md bg-red-100 p-[10px] min-h-[150px] pt-[10px] pb-[10px]"
-        data-oid="2zja71j"
-      >
+      <div className="flex flex-col items-center justify-center rounded-lg shadow-md bg-red-100 p-[10px] min-h-[150px] pt-[10px] pb-[10px]">
         {/* Puntaje por categoría */}
 
         <div
           className={`w-[<span class="math-inline">\{imageSize\}px\] h\-\[</span>{imageSize}px] flex items-center justify-center`}
-          data-oid="9dx91bs"
         >
           <Image
             src={category.svgUrl}
@@ -85,20 +78,13 @@ function ProfileContent() {
               console.warn(`Error al cargar SVG: ${category.svgUrl}`);
             }}
             className="h-[72px]"
-            data-oid="xs.tv_t"
           />
         </div>
 
-        <p
-          className="mt-2 text-center text-gray-700 text-[16px] font-bold"
-          data-oid="lzp_93w"
-        >
+        <p className="mt-2 text-center text-gray-700 text-[16px] font-bold">
           {categoryName}
         </p>
-        <div
-          className="relative mb-2 text-black text-[16px] font-medium w-[20px] text-center"
-          data-oid="aj-k5ox"
-        >
+        <div className="relative mb-2 text-black text-[16px] font-medium w-[20px] text-center">
           {pointsForThisCategory}
         </div>
         {/* Imagen de la categoría */}
@@ -106,21 +92,14 @@ function ProfileContent() {
     );
   };
   return (
-    <div
-      className="min-h-screen flex items-center flex-col justify-start h-screen w-full fixed top-auto right-auto bottom-auto left-auto"
-      data-oid="8:-aiaa"
-    >
-      <div
-        className="flex items-center right-0 bottom-0 left-0 top-0 relative w-full justify-center p-[24px] h-full"
-        data-oid="vjiz0g-"
-      >
+    <div className="min-h-screen flex items-center flex-col justify-start h-screen w-full fixed top-auto right-auto bottom-auto left-auto">
+      <div className="flex items-center right-0 bottom-0 left-0 top-0 relative w-full justify-center p-[24px] h-full">
         <Image
           src="/logos/lightrays.png"
           alt="BAC Trivia Logo"
           width={80}
           height={35}
           className="w-full h-[408px] absolute -top-20 z-0"
-          data-oid="79za12l"
         />
 
         <Image
@@ -129,51 +108,37 @@ function ProfileContent() {
           width={80}
           height={35}
           className="w-[128px] z-10"
-          data-oid=".ojbcgq"
         />
       </div>
 
-      <div
-        className="bg-white p-6 rounded-b-xl text-gray-800 flex-col rounded-tl-[12px] rounded-tr-[12px] rounded-bl-none rounded-br-none w-full flex items-stretch justify-between gap-[24px] top-0 right-0 bottom-0 left-0 relative h-fit"
-        data-oid="dkc3uuf"
-      >
+      <div className="bg-white p-6 rounded-b-xl text-gray-800 flex-col rounded-tl-[12px] rounded-tr-[12px] rounded-bl-none rounded-br-none w-full flex items-stretch justify-between gap-[24px] top-0 right-0 bottom-0 left-0 relative h-fit">
         {/* Sección de Puntajes por Categoría */}
 
-        <div data-oid="hqzcks5">
-          <h2 className="text-2xl font-semibold text-center" data-oid="52lcbk4">
+        <div>
+          <h2 className="text-2xl font-semibold text-center">
             {nombre} {apellido}
           </h2>
-          <p
-            className="font-bold text-[48px] text-center leading-[60px]"
-            data-oid="h74nq83"
-          >
+          <p className="font-bold text-[48px] text-center leading-[60px]">
             {puntosTotales ?? 0} pts
           </p>
         </div>
-        <div className="m-0 h-fit-content" data-oid="efigot0">
-          <h3
-            className="text-sm font-semibold text-gray-900 mb-4 text-center"
-            data-oid="wendx7d"
-          >
+        <div className="m-0 h-fit-content">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4 text-center">
             Puntos por Categoría
           </h3>
           {/* Grid para las 4 categorías */}
-          <div
-            className="grid grid-cols-2 sm:grid-cols-4 sm:gap-4 w-full gap-[24px]"
-            data-oid="eio07if"
-          >
+          <div className="grid grid-cols-2 sm:grid-cols-4 sm:gap-4 w-full gap-[24px]">
             {CATEGORIES.map((cat) => (
-              <CategoryDisplay key={cat.id} category={cat} data-oid="ck4t8nt" />
+              <CategoryDisplay key={cat.id} category={cat} />
             ))}
           </div>
         </div>
 
         {/* Botones de Acción */}
-        <div className="flex flex-col space-y-3 mt-0" data-oid="7w7t8s_">
+        <div className="flex flex-col space-y-3 mt-0">
           <Button
             onClick={handlePlayClick}
             className="w-full py-3 text-lg bg-red-600 hover:bg-red-700 text-black font-semibold"
-            data-oid="mnzmc.n"
           >
             ¡A Jugar!
           </Button>
@@ -181,7 +146,6 @@ function ProfileContent() {
             onClick={handleLogoutClick}
             variant="secondary"
             className="w-full py-2.5 text-sm text-red-600 hover:bg-red-100 border border-red-200 hover:border-red-300"
-            data-oid="g87sfvw"
           >
             Cerrar Sesión
           </Button>
@@ -192,8 +156,8 @@ function ProfileContent() {
 } // --- Componente de Página Exportado ---
 export default function ProfilePage() {
   return (
-    <ProtectedRoute data-oid="km93ig3">
-      <ProfileContent data-oid="13anwai" />
+    <ProtectedRoute>
+      <ProfileContent />
     </ProtectedRoute>
   );
 }

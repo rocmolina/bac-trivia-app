@@ -42,19 +42,13 @@ const Reticle: React.FC<ReticleProps> = ({ visible, matrix }) => {
   if (!visible) return null; // Optimization: don't render if not visible
 
   return (
-    <mesh
-      ref={ref}
-      matrixAutoUpdate={false}
-      rotation-x={-Math.PI / 2}
-      data-oid="umms2qb"
-    >
-      <ringGeometry args={[0.08, 0.1, 32]} data-oid="22p-dj7" />
+    <mesh ref={ref} matrixAutoUpdate={false} rotation-x={-Math.PI / 2}>
+      <ringGeometry args={[0.08, 0.1, 32]} />
       <meshBasicMaterial
         color="lime"
         opacity={0.9}
         transparent={true}
         depthTest={false}
-        data-oid="5ss:eh5"
       />
     </mesh>
   );
@@ -106,24 +100,15 @@ const PlacedObject: React.FC<PlacedObjectProps> = ({
       // -Math.PI should make it face "up" if placed on a floor relative to its local Y being up.
       // If it appears upside down or incorrectly rotated, this is a key place to adjust.
       rotation-x={-Math.PI / 2} // Often needed to make a plane lay flat from default Z-up
-      data-oid="cyto-a:"
     >
-      <planeGeometry args={[planeSize, planeSize]} data-oid="z_jwjdz" />
+      <planeGeometry args={[planeSize, planeSize]} />
       <React.Suspense
-        fallback={
-          <meshBasicMaterial
-            color="lightgray"
-            wireframe={true}
-            data-oid="tfadzik"
-          />
-        }
-        data-oid="wbrt3o-"
+        fallback={<meshBasicMaterial color="lightgray" wireframe={true} />}
       >
         <DreiImage
           url={svgUrl}
           transparent // Important for SVGs with transparent backgrounds
           toneMapped={false} // Often better for UI elements / icons
-          data-oid="rsta_0p"
         />
       </React.Suspense>
     </mesh>
@@ -411,20 +396,12 @@ const ARScene: React.FC<ARSceneProps> = ({
 
   return (
     <>
-      <ambientLight intensity={1.0} data-oid="nfu5jyg" />
-      <directionalLight
-        position={[1, 4, 2.5]}
-        intensity={1.2}
-        data-oid="f213vh0"
-      />
+      <ambientLight intensity={1.0} />
+      <directionalLight position={[1, 4, 2.5]} intensity={1.2} />
 
       {/* Conditionally render Reticle based on shouldRenderReticle */}
       {shouldRenderReticle && (
-        <Reticle
-          visible={true}
-          matrix={reticleMatrix.current}
-          data-oid="sh14iqe"
-        />
+        <Reticle visible={true} matrix={reticleMatrix.current} />
       )}
 
       {objects.map((obj) => (
@@ -437,7 +414,6 @@ const ARScene: React.FC<ARSceneProps> = ({
               `ARScene: PlacedObject onSelectFallback invoked for ${obj.qrData}. This should not be the primary navigation trigger.`,
             );
           }}
-          data-oid="z7rl1qx"
         />
       ))}
     </>
@@ -482,13 +458,11 @@ const ARCoreExperience: React.FC<ARCoreExperienceProps> = ({
           zIndex: 1,
         }}
         camera={{ fov: 70, near: 0.01, far: 20 }}
-        data-oid="844h46p"
       >
         <ARScene
           activeSession={activeSession}
           qrCodeData={qrCodeData}
           onExit={onExit}
-          data-oid="i7h_uqu"
         />
       </Canvas>
       <div
@@ -502,7 +476,6 @@ const ARCoreExperience: React.FC<ARCoreExperienceProps> = ({
           zIndex: 2,
           WebkitTapHighlightColor: "transparent",
         }}
-        data-oid="bpfkc0w"
       />
     </>
   );

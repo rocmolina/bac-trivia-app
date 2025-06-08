@@ -33,12 +33,11 @@ const Input: React.FC<InputProps> = ({
     : "border-gray-300 dark:border-gray-400"; // Estilo normal, añadido un borde un poco más visible en dark mode si el input es blanco
 
   return (
-    <div data-oid="w1wqle1">
+    <div>
       {label && (
         <label
           htmlFor={id}
           className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-          data-oid="z420aoy"
         >
           {label}{" "}
           {/* El color del label también podría necesitar ajuste para modo oscuro */}
@@ -48,14 +47,9 @@ const Input: React.FC<InputProps> = ({
         id={id}
         className={`${baseStyle} ${errorStyle} ${className}`}
         {...props}
-        data-oid="831ni1q"
       />
 
-      {error && (
-        <p className="mt-1 text-xs text-red-600" data-oid="aq-8mdo">
-          {error}
-        </p>
-      )}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 };

@@ -79,21 +79,14 @@ export default function LoginPage() {
   // );
 
   return (
-    <div
-      className="flex items-center min-h-screen bg-red-500 text-gray-800 dark:text-gray-800 flex-col justify-start p-[16px]"
-      data-oid=":j11ud5"
-    >
-      <div
-        className="sm:top-12 relative top-auto right-auto bottom-auto left-auto w-full h-[408px]"
-        data-oid="rh4wai5"
-      >
+    <div className="flex items-center min-h-screen bg-red-500 text-gray-800 dark:text-gray-800 flex-col justify-start p-[16px]">
+      <div className="sm:top-12 relative top-auto right-auto bottom-auto left-auto w-full h-[408px]">
         <Image
           src="/logos/lightrays.png"
           alt="BAC Trivia Logo"
           width={80}
           height={35}
           className="w-[537px] h-[409px]"
-          data-oid="1:k_o77"
         />
 
         <Image
@@ -103,17 +96,10 @@ export default function LoginPage() {
           height={40}
           priority
           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 auto z-10 drop-shadow-xl rounded-lg w-[35%] max-w-md"
-          data-oid="pgtrmaw"
         />
       </div>
-      <div
-        className="max-w-md w-full bg-white rounded-lg shadow-md flex flex-col justify-center items-center gap-[normal] p-[24px]"
-        data-oid="9decsxw"
-      >
-        <h2
-          className="text-2xl font-bold text-center mb-6 border-0 border-[#00000000] text-[#000000]"
-          data-oid="kqt_.bb"
-        >
+      <div className="max-w-md w-full bg-white rounded-lg shadow-md flex flex-col justify-center items-center gap-[normal] p-[24px]">
+        <h2 className="text-2xl font-bold text-center mb-6 border-0 border-[#00000000] text-[#000000]">
           {" "}
           {/* Texto gris */}
           Iniciar Sesión
@@ -121,7 +107,6 @@ export default function LoginPage() {
         <form
           onSubmit={handleSubmit}
           className="space-y-4 relative top-auto right-auto bottom-auto left-auto w-full flex flex-col gap-[8px]"
-          data-oid="cty78yb"
         >
           <Input
             label="ID de Usuario:"
@@ -132,28 +117,21 @@ export default function LoginPage() {
             placeholder="usuario-123..."
             required
             error={error && error.includes("UsuarioID") ? error : undefined}
-            data-oid="6nmx_m9"
           />
 
-          {error && (
-            <p className="text-sm text-red-600" data-oid="us17b0l">
-              {error}
-            </p>
-          )}
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <Button
             type="submit"
             className="w-full bg-red-600 hover:bg-red-700 text-gray-500 font-bold py-3"
             isLoading={isLoading}
-            data-oid="y:eji.x"
           >
             Iniciar Sesión
           </Button>
-          <p className="text-sm text-center text-gray-600" data-oid="1.frd3z">
+          <p className="text-sm text-center text-gray-600">
             ¿No tienes cuenta?{" "}
             <a
               href="/register"
               className="font-medium text-red-600 hover:text-red-700 underline"
-              data-oid="8w1mw83"
             >
               {" "}
               {/* Enlace rojo */}
@@ -161,17 +139,13 @@ export default function LoginPage() {
             </a>
           </p>
         </form>
-        <div
-          className="relative top-auto right-auto bottom-auto left-auto flex justify-center items-center h-[fit-content] w-full mt-[24px]"
-          data-oid="j-:t0vl"
-        >
+        <div className="relative top-auto right-auto bottom-auto left-auto flex justify-center items-center h-[fit-content] w-full mt-[24px]">
           <Image
             src="/logos/bac_logo.png"
             alt="BAC Logo"
             width={80}
             height={20}
             className="relative top-auto right-auto bottom-auto left-auto h-[31px] m-0"
-            data-oid="4_qbbpx"
           />
         </div>
       </div>

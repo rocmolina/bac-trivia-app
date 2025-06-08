@@ -48,7 +48,6 @@ const Button: React.FC<ButtonProps> = ({
       className={`${baseStyle} ${variantStyle} ${sizeStyle} ${loadingStyle} ${className}`}
       disabled={isLoading}
       {...props}
-      data-oid="xvs.p:2"
     >
       {isLoading ? "Cargando..." : children}
     </button>

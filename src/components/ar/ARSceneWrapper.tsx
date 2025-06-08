@@ -16,10 +16,9 @@ const ARSceneWrapper = ({ children }: { children: React.ReactNode }) => {
         height: "100vh",
         zIndex: -1,
       }}
-      data-oid="ld_s93b"
     >
-      <ambientLight intensity={1.0} data-oid="nlksnq." />
-      <pointLight position={[5, 10, 5]} intensity={50} data-oid="jhi5uim" />
+      <ambientLight intensity={1.0} />
+      <pointLight position={[5, 10, 5]} intensity={50} />
       {children} {/* Para renderizar objetos 3D específicos */}
       {/* <OrbitControls /> */} {/* Útil para debug fuera de modo AR */}
     </Canvas>

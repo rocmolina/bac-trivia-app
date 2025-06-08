@@ -82,33 +82,23 @@ export default function AdminLoginPage() {
   //     </div>
   // );
   return (
-    <div
-      className="flex items-center justify-center min-h-screen bg-white p-4 relative text-gray-800 dark:text-gray-800"
-      data-oid="_5vnmm7"
-    >
-      <div className="absolute top-8 sm:top-12" data-oid="_yy4x:0">
+    <div className="flex items-center justify-center min-h-screen bg-white p-4 relative text-gray-800 dark:text-gray-800">
+      <div className="absolute top-8 sm:top-12">
         <Image
           src="/logos/bac_logo.png"
           alt="BAC Logo"
           width={120}
           height={160}
           priority
-          data-oid="dqod:3h"
         />
       </div>
-      <div
-        className="p-8 max-w-md w-full bg-white rounded-lg shadow-xl"
-        data-oid="724i._f"
-      >
-        <h2
-          className="text-3xl font-bold text-center text-gray-400 mb-8"
-          data-oid="h.i7tj5"
-        >
+      <div className="p-8 max-w-md w-full bg-white rounded-lg shadow-xl">
+        <h2 className="text-3xl font-bold text-center text-gray-400 mb-8">
           {" "}
           {/* Texto oscuro */}
           BAC Trivia - Admin Login
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-6" data-oid="nys2ojp">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <Input
             label="Admin ID"
             id="adminId"
@@ -117,7 +107,6 @@ export default function AdminLoginPage() {
             onChange={(e) => setAdminId(e.target.value)}
             placeholder="tuAdminID"
             required
-            data-oid="vcdntv-"
           />
 
           <Input
@@ -127,14 +116,10 @@ export default function AdminLoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            data-oid="6cdyv-1"
           />
 
           {error && (
-            <p
-              className="text-sm text-red-600 bg-red-100 p-3 rounded-md border border-red-300"
-              data-oid=":we.507"
-            >
+            <p className="text-sm text-red-600 bg-red-100 p-3 rounded-md border border-red-300">
               {error}
             </p>
           )}
@@ -142,7 +127,6 @@ export default function AdminLoginPage() {
             type="submit"
             className="w-full py-3 text-lg bg-yellow-400 hover:bg-yellow-500 text-black font-semibold" /* Botón amarillo, texto negro */
             isLoading={isLoading}
-            data-oid="bh7088-"
           >
             Ingresar como Admin
           </Button>

@@ -10,22 +10,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" data-oid="_u.bvgw">
-      <body
-        className="w-auto h-auto flex flex-col justify-between items-center"
-        data-oid="qnc3-1c"
-      >
+    <html lang="es">
+      <body className="w-auto h-auto flex flex-col justify-between items-center">
         {/* Aquí se puede añadir un Navbar/Header/Footer global en caso de ser necesario */}
-        <main
-          className="min-h-screen w-full h-full bg-red-500"
-          data-oid="g4hii-z"
-        >
+        <main className="min-h-screen w-full h-full bg-red-500">
           {" "}
           {/* Fondo base */}
           {children}
         </main>
-        <GlobalAppDisabledModal data-oid="fpct43d" />{" "}
-        {/* Modal disponible globalmente */}
+        <GlobalAppDisabledModal /> {/* Modal disponible globalmente */}
       </body>
     </html>
   );

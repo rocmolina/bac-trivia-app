@@ -72,52 +72,40 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     <div
       className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100]" // z-index alto
       onClick={onClose}
-      data-oid="4x_jex_"
     >
       <div
         className="bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-lg mx-4"
         onClick={(e) => e.stopPropagation()}
-        data-oid="2rdj125"
       >
-        <div
-          className="flex justify-between items-center mb-6 pb-3 border-b border-gray-200"
-          data-oid="kyv866x"
-        >
-          <h2
-            className="text-2xl font-semibold text-gray-800"
-            data-oid="6whyh95"
-          >
+        <div className="flex justify-between items-center mb-6 pb-3 border-b border-gray-200">
+          <h2 className="text-2xl font-semibold text-gray-800">
             Editar Nombre de Usuario
           </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors text-3xl leading-none"
             aria-label="Cerrar modal"
-            data-oid="00jfhn6"
           >
             &times;
           </button>
         </div>
 
-        <div className="mb-4" data-oid="2m-_n_s">
-          <p className="text-sm text-gray-600" data-oid="rpf3302">
+        <div className="mb-4">
+          <p className="text-sm text-gray-600">
             Editando a:{" "}
-            <span className="font-semibold text-gray-800" data-oid="6ghxz2.">
+            <span className="font-semibold text-gray-800">
               {user.nombre} {user.apellido || ""}
             </span>
           </p>
-          <p className="text-xs text-gray-500" data-oid="7p5n.3e">
+          <p className="text-xs text-gray-500">
             UsuarioID actual:{" "}
-            <span
-              className="font-mono bg-gray-100 px-1 rounded"
-              data-oid="5dutg3s"
-            >
+            <span className="font-mono bg-gray-100 px-1 rounded">
               {user.usuarioId}
             </span>
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5" data-oid="th48:q-">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <Input
             label="Nuevo Nombre del Usuario"
             id="edit-user-nombre"
@@ -128,21 +116,14 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             placeholder="Ingresa el nuevo nombre"
             autoFocus
             className="text-lg" // Hacer el input un poco más grande
-            data-oid="z3:q2l:"
           />
 
           {updateError && (
-            <p
-              className="text-sm text-red-600 bg-red-100 p-3 rounded-md border border-red-200"
-              data-oid="r7s09ig"
-            >
+            <p className="text-sm text-red-600 bg-red-100 p-3 rounded-md border border-red-200">
               {updateError}
             </p>
           )}
-          <div
-            className="flex flex-col sm:flex-row-reverse gap-3 pt-3"
-            data-oid="-fnvx8l"
-          >
+          <div className="flex flex-col sm:flex-row-reverse gap-3 pt-3">
             <Button
               type="submit"
               className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white"
@@ -152,7 +133,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 !currentNombre.trim() ||
                 currentNombre.trim() === user.nombre
               }
-              data-oid="xgt:wfs"
             >
               Actualizar Nombre
             </Button>
@@ -162,7 +142,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               variant="secondary"
               className="w-full sm:w-auto border-gray-400 text-gray-700 hover:bg-gray-100"
               disabled={isUpdating}
-              data-oid="zfzj5fm"
             >
               Cancelar
             </Button>

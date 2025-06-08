@@ -75,11 +75,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (status === "initial" || status === "loading") {
     console.log(`ProtectedRoute Render: Loading state (Status: ${status})`);
     return (
-      <div
-        className="flex items-center justify-center min-h-screen"
-        data-oid="e08dl_x"
-      >
-        <p data-oid="ysnsx:4">Verificando sesión...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Verificando sesión...</p>
       </div>
     );
   }
@@ -91,11 +88,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         "ProtectedRoute Render: Status='authenticated' pero hook dice !isAuthenticated. Mostrando fallback.",
       );
       return (
-        <div
-          className="flex items-center justify-center min-h-screen"
-          data-oid="xopfcii"
-        >
-          <p data-oid="y_iywf_">Redirigiendo...</p>
+        <div className="flex items-center justify-center min-h-screen">
+          <p>Redirigiendo...</p>
         </div>
       );
     }
@@ -110,11 +104,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     "ProtectedRoute Render: Redirecting state (Status: unauthenticated)",
   );
   return (
-    <div
-      className="flex items-center justify-center min-h-screen"
-      data-oid="kl45ado"
-    >
-      <p data-oid="i9ad.2d">Redirigiendo...</p>
+    <div className="flex items-center justify-center min-h-screen">
+      <p>Redirigiendo...</p>
     </div>
   );
 };

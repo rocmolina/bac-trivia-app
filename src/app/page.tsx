@@ -24,11 +24,8 @@ function RootContent() {
   // Si está autenticado, podría mostrar brevemente un loader antes de ir a perfil
   if (isAuthenticated) {
     return (
-      <div
-        className="flex items-center justify-center min-h-screen"
-        data-oid="awbfhr7"
-      >
-        <p data-oid="0p-kcd.">Cargando perfil...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Cargando perfil...</p>
       </div>
     );
   }
@@ -42,8 +39,8 @@ export default function HomePage() {
   // ProtectedRoute decidirá si muestra sus hijos (que redirigen a /profile)
   // o si redirige a /login.
   return (
-    <ProtectedRoute data-oid="nsz3ly7">
-      <RootContent data-oid="5f.fxbk" />
+    <ProtectedRoute>
+      <RootContent />
     </ProtectedRoute>
   );
 }

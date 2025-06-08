@@ -33,13 +33,8 @@ function TriviaResultContent() {
 
   if (isLoading || isSuccess === null || !category) {
     return (
-      <div
-        className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-700 w-full relative top-auto right-auto bottom-auto left-auto"
-        data-oid="jsz7nek"
-      >
-        <p className="text-xl animate-pulse" data-oid="ld1k0z7">
-          Cargando resultado...
-        </p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-700 w-full relative top-auto right-auto bottom-auto left-auto">
+        <p className="text-xl animate-pulse">Cargando resultado...</p>
       </div>
     );
   }
@@ -70,7 +65,6 @@ function TriviaResultContent() {
   return (
     <div
       className={`flex flex-col items-center justify-center min-h-screen ${bgColor} p-6 sm:p-8 transition-colors duration-500 relative`}
-      data-oid="cphui3q"
     >
       <Image
         width={100}
@@ -78,7 +72,6 @@ function TriviaResultContent() {
         alt="Decoration"
         src={isSuccess ? "/logos/confetti.png" : "/logos/degradado.png"}
         className="absolute top-0 w-full left-0 h-[fit-content] z-0"
-        data-oid="tcm3qhe"
       />
 
       {isSuccess && (
@@ -88,18 +81,15 @@ function TriviaResultContent() {
           src="/logos/lightrays.png"
           alt="Trivia Result"
           className="mb-4 absolute top-0 w-full left-0 h-[378px] z-10"
-          data-oid="e:e_5ff"
         />
       )}
 
       <div
         className={`w-full max-w-md text-center p-8 rounded-2xl shadow-2xl ${imageContainerBg} relative z-20`}
-        data-oid="ker25kz"
       >
         <div
           className="mb-6 mx-auto flex items-center justify-center"
           style={{ width: imageSize, height: imageSize }}
-          data-oid="83f7.n7"
         >
           <Image
             src={finalImageUrl}
@@ -108,28 +98,24 @@ function TriviaResultContent() {
             height={imageSize}
             style={{ objectFit: "contain" }} // Fallback si la imagen _sad no carga, se podría intentar la normal.
             // onError={(e) => { if (!isSuccess) e.currentTarget.src = imageBaseUrl; }} // Opcional
-            data-oid="yg46cd6"
           />
         </div>
 
         <h1
           className={`text-4xl sm:text-5xl font-bold mb-3 text-black`} //Color del texto neutro solicitado por el cliente
-          data-oid="g.435t9"
         >
           {title}
         </h1>
         <p
           className={`text-xl sm:text-2xl mb-8 text-black`} //Color del texto neutro solicitado por el cliente
-          data-oid="1uufbp_"
         >
           {message}
         </p>
 
-        <div className="space-y-4" data-oid="yrixmfh">
+        <div className="space-y-4">
           <Button
             onClick={() => router.push("/play")}
             className="w-full py-3 text-lg bg-red-600 hover:bg-red-700 text-black font-semibold shadow-md"
-            data-oid="d689516"
           >
             Volver a Jugar
           </Button>
@@ -137,7 +123,6 @@ function TriviaResultContent() {
             onClick={() => router.push("/profile")}
             variant="secondary"
             className="w-full py-3 text-lg bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 shadow-md"
-            data-oid="u-u_f:i"
           >
             Ir al Perfil
           </Button>
@@ -148,19 +133,15 @@ function TriviaResultContent() {
 }
 export default function TriviaResultPage() {
   return (
-    <ProtectedRoute data-oid="ogb4njg">
+    <ProtectedRoute>
       <Suspense
         fallback={
-          <div
-            className="flex items-center justify-center min-h-screen"
-            data-oid="x:u8_zy"
-          >
-            <p data-oid="fsvr7s5">Cargando...</p>
+          <div className="flex items-center justify-center min-h-screen">
+            <p>Cargando...</p>
           </div>
         }
-        data-oid="itapgne"
       >
-        <TriviaResultContent data-oid="sqyypfc" />
+        <TriviaResultContent />
       </Suspense>
     </ProtectedRoute>
   );

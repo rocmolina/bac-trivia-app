@@ -39,16 +39,13 @@ const PlacedEmoji: React.FC<PlacedEmojiProps> = ({
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
       scale={hovered ? 1.2 : 1} // Aplicamos la escala al grupo para que afecte a todos sus hijos
-      data-oid="yhb32d."
     >
       <Box
         args={[0.2, 0.2, 0.2]}
         // La escala ya se maneja en el grupo
-        data-oid="eax92pd"
       >
         <meshStandardMaterial
           color={hovered ? "hotpink" : new THREE.Color(color)}
-          data-oid="vj6tqy."
         />
       </Box>
       {/* Podrías añadir un <Text> de @react-three/drei aquí para mostrar la categoría si es necesario */}

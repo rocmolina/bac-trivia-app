@@ -11,9 +11,9 @@ export function PlaceholderCube() {
     }
   });
   return (
-    <mesh ref={meshRef} position={[0, 0.5, -2]} scale={0.5} data-oid="9tz4nm_">
-      <boxGeometry args={[1, 1, 1]} data-oid="1bv5kd9" />
-      <meshStandardMaterial color="dodgerblue" data-oid="s--dea_" />
+    <mesh ref={meshRef} position={[0, 0.5, -2]} scale={0.5}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="dodgerblue" />
     </mesh>
   );
 }

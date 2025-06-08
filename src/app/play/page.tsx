@@ -82,7 +82,7 @@ const WebARViewer = () => {
   }, [router]);
 
   return (
-    <div className="relative" data-oid="2qdne1i">
+    <div className="relative">
       <iframe
         id={IFRAME_ID}
         title="8th Wall AR"
@@ -97,13 +97,11 @@ const WebARViewer = () => {
           padding: 0,
           display: "block",
         }}
-        data-oid="m4iluxv"
       />
 
       <Button
         className="fixed bottom-8 left-1/2 transform -translate-x-1/2"
         onClick={() => router.push("/profile")}
-        data-oid="9one8pa"
       >
         Back to Menu
       </Button>

@@ -27,13 +27,11 @@ const UserCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     viewBox="0 0 24 24"
     fill="currentColor"
     {...props}
-    data-oid="ix0ro:s"
   >
     <path
       fillRule="evenodd"
       d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
       clipRule="evenodd"
-      data-oid="5ebjbmx"
     />
   </svg>
 );
@@ -44,13 +42,11 @@ const XMarkIcon = (props: React.SVGProps<SVGSVGElement>) => (
     viewBox="0 0 24 24"
     fill="currentColor"
     {...props}
-    data-oid="5ir6yfv"
   >
     <path
       fillRule="evenodd"
       d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z"
       clipRule="evenodd"
-      data-oid="8g1_0s-"
     />
   </svg>
 );
@@ -64,13 +60,11 @@ const ExclamationTriangleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     strokeWidth={1.5}
     stroke="currentColor"
     {...props}
-    data-oid="c:taed2"
   >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-      data-oid="aanwhgo"
     />
   </svg>
 );
@@ -84,13 +78,11 @@ const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     strokeWidth={1.5}
     stroke="currentColor"
     {...props}
-    data-oid="j4gs-uc"
   >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
       d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      data-oid="31gt129"
     />
   </svg>
 );
@@ -326,15 +318,11 @@ function PlayPageContent() {
 
   if (!user.isAuthenticated || !user.firestoreId) {
     return (
-      <div
-        className="flex flex-col items-center justify-center min-h-screen p-4 text-center"
-        data-oid="ll.dsb_"
-      >
-        <p data-oid="5bdwgbl">Debes iniciar sesión para jugar.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+        <p>Debes iniciar sesión para jugar.</p>
         <Button
           onClick={() => router.push("/login")}
           className="mt-4 bg-red-600 hover:bg-red-700 text-white"
-          data-oid="0u.gt.0"
         >
           Ir a Login
         </Button>
@@ -354,26 +342,17 @@ function PlayPageContent() {
         size="sm"
         className="!absolute top-4 right-4 z-20 flex items-center bg-white/90 hover:bg-white shadow-md px-3 py-1.5"
         aria-label="Ir al perfil"
-        data-oid="m:dglq8"
       >
-        <UserCircleIcon
-          className="h-5 w-5 mr-1.5 text-gray-700"
-          data-oid="y-pki.d"
-        />
+        <UserCircleIcon className="h-5 w-5 mr-1.5 text-gray-700" />
 
-        <span className="text-gray-700" data-oid="0gwjsjl">
-          Perfil
-        </span>
+        <span className="text-gray-700">Perfil</span>
       </Button>
     );
   };
 
   return (
-    <div
-      className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-gray-100 relative"
-      data-oid="eptdg1d"
-    >
-      <TopRightButton data-oid="lawuz6d" />
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-gray-100 relative">
+      <TopRightButton />
 
       <div
         id="ar-dom-overlay-container"
@@ -393,7 +372,6 @@ function PlayPageContent() {
           padding: "16px",
           gap: "12px",
         }}
-        data-oid="a3b2-lz"
       >
         {arSession && (
           <>
@@ -403,10 +381,8 @@ function PlayPageContent() {
               size="sm"
               className="bg-white/80 hover:bg-white text-red-600 border-red-300 hover:border-red-500 flex items-center shadow-lg px-3 py-1.5"
               style={{ pointerEvents: "auto" }}
-              data-oid="pgeyg9m"
             >
-              <XMarkIcon className="h-5 w-5 mr-1.5" data-oid="fzpx_qw" /> Salir
-              de AR
+              <XMarkIcon className="h-5 w-5 mr-1.5" /> Salir de AR
             </Button>
             {/* El botón "Escanear Otro QR" ya no es necesario aquí, se accede desde la pantalla de resultado de QR válido o QR inválido */}
           </>
@@ -416,7 +392,7 @@ function PlayPageContent() {
       {/* PANTALLA INICIAL o MOSTRANDO SCANNER */}
       {!arSession && !showQrResultScreen && (
         <>
-          <div className="mb-8" data-oid="9.g05y0">
+          <div className="mb-8">
             {" "}
             <Image
               src="/logos/bactrivia_logo.svg"
@@ -424,25 +400,20 @@ function PlayPageContent() {
               width={140}
               height={40}
               priority
-              data-oid=".x8ks_h"
             />{" "}
           </div>
-          <h1
-            className="text-2xl font-semibold text-gray-700 mb-4"
-            data-oid="sym81v5"
-          >
+          <h1 className="text-2xl font-semibold text-gray-700 mb-4">
             ¡A Jugar!
           </h1>
           {!shouldRenderScannerContainer && (
             <>
-              <p className="text-gray-600 mb-6 max-w-xs" data-oid="6pvkw..">
+              <p className="text-gray-600 mb-6 max-w-xs">
                 Presiona Escanear QR y apunta tu cámara al código del tótem.
               </p>
               <Button
                 onClick={handleScanButtonClick}
                 className="mb-4 bg-red-600 hover:bg-red-700 text-white text-lg px-8 py-3"
                 size="lg"
-                data-oid="xfhfucu"
               >
                 Escanear QR
               </Button>
@@ -452,14 +423,10 @@ function PlayPageContent() {
             <div
               id={qrcodeRegionId}
               className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto border-2 border-red-300 rounded-lg overflow-hidden shadow-lg my-4 p-1 bg-white"
-              data-oid="i2zfiz7"
             ></div>
           )}
           {arError && (
-            <p
-              className="mt-4 p-3 bg-red-100 text-red-700 border border-red-300 rounded-md w-full max-w-md"
-              data-oid="c.b_wjl"
-            >
+            <p className="mt-4 p-3 bg-red-100 text-red-700 border border-red-300 rounded-md w-full max-w-md">
               {arError}
             </p>
           )}
@@ -471,32 +438,19 @@ function PlayPageContent() {
         showQrResultScreen &&
           !arSession &&
           (isValidQr === true && scannedData ? ( // QR Válido
-            <div
-              className="flex flex-col items-center justify-center text-center p-6"
-              data-oid="z.pmucv"
-            >
-              <div
-                className="mb-6 p-6 bg-white rounded-lg shadow-xl w-full max-w-md"
-                data-oid="1h8uleu"
-              >
-                <CheckCircleIcon
-                  className="w-16 h-16 text-green-500 mx-auto mb-4"
-                  data-oid="951lsxr"
-                />
+            <div className="flex flex-col items-center justify-center text-center p-6">
+              <div className="mb-6 p-6 bg-white rounded-lg shadow-xl w-full max-w-md">
+                <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto mb-4" />
 
-                <p
-                  className="text-xl font-semibold mb-2 text-gray-800"
-                  data-oid="cqb-4ik"
-                >
+                <p className="text-xl font-semibold mb-2 text-gray-800">
                   ¡QR Válido Escaneado!
                 </p>
-                <p className="text-gray-600 my-4" data-oid="j0fl90.">
+                <p className="text-gray-600 my-4">
                   ¿Listo para la Realidad Aumentada?
                 </p>
                 <Button
                   onClick={handleEnterAR}
                   className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md text-lg mb-3"
-                  data-oid="uyp5wu3"
                 >
                   Iniciar Experiencia AR
                 </Button>
@@ -504,48 +458,31 @@ function PlayPageContent() {
                   onClick={handleScanAnotherQrButton}
                   variant="secondary"
                   className="w-full py-2.5"
-                  data-oid="a6t6pfm"
                 >
                   Escanear Otro QR
                 </Button>
               </div>
               {arError && (
-                <p
-                  className="mt-4 text-red-500 p-3 bg-red-50 rounded-md"
-                  data-oid="ulhfrl0"
-                >
+                <p className="mt-4 text-red-500 p-3 bg-red-50 rounded-md">
                   {arError}
                 </p>
               )}
             </div>
           ) : isValidQr === false ? ( // QR Inválido
-            <div
-              className="flex flex-col items-center justify-center text-center p-6"
-              data-oid="n235fcw"
-            >
-              <div
-                className="mb-6 p-6 bg-white rounded-lg shadow-xl w-full max-w-md"
-                data-oid="cdhsdnq"
-              >
-                <ExclamationTriangleIcon
-                  className="w-16 h-16 text-red-500 mx-auto mb-4"
-                  data-oid="k7z7tc3"
-                />
-                <p
-                  className="text-xl font-semibold text-red-700 mb-3"
-                  data-oid="koz4qsb"
-                >
+            <div className="flex flex-col items-center justify-center text-center p-6">
+              <div className="mb-6 p-6 bg-white rounded-lg shadow-xl w-full max-w-md">
+                <ExclamationTriangleIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                <p className="text-xl font-semibold text-red-700 mb-3">
                   {arError || "¡QR no válido!"}
                 </p>{" "}
                 {/* Mostrar arError si existe, sino el mensaje genérico */}
-                <p className="text-gray-600 mb-6 px-2" data-oid="qa4:78g">
+                <p className="text-gray-600 mb-6 px-2">
                   El código QR escaneado no es reconocido. Por favor, intenta
                   con un QR de tótem oficial BAC Trivia.
                 </p>
                 <Button
                   onClick={handleContinueAfterInvalidQr}
                   className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-md text-lg"
-                  data-oid="vygzum2"
                 >
                   Continuar
                 </Button>
@@ -561,7 +498,6 @@ function PlayPageContent() {
             activeSession={arSession}
             qrCodeData={scannedData}
             onExit={handleExitARRequest}
-            data-oid="c8wl0jy"
           />
         )}
     </div>
@@ -572,17 +508,13 @@ export default function PlayPageContainer() {
   return (
     <Suspense
       fallback={
-        <div
-          className="flex items-center justify-center min-h-screen"
-          data-oid="4pa.7vh"
-        >
-          <p data-oid="wi00_kx">Cargando página de juego...</p>
+        <div className="flex items-center justify-center min-h-screen">
+          <p>Cargando página de juego...</p>
         </div>
       }
-      data-oid="7yja535"
     >
-      <ProtectedRoute data-oid="nc29mpe">
-        <PlayPageContent data-oid="cmkvtc7" />
+      <ProtectedRoute>
+        <PlayPageContent />
       </ProtectedRoute>
     </Suspense>
   );

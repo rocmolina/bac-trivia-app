@@ -72,23 +72,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <div
-      className="flex items-center min-h-screen bg-red-500 text-gray-800 dark:text-gray-800 flex-col justify-start p-[16px]"
-      data-oid="6vej1_c"
-    >
+    <div className="flex items-center min-h-screen bg-red-500 text-gray-800 dark:text-gray-800 flex-col justify-start p-[16px]">
       {" "}
       {/* */}
-      <div
-        className="sm:top-12 relative top-auto right-auto bottom-auto left-auto w-full h-[408px]"
-        data-oid=":qto1v8"
-      >
+      <div className="sm:top-12 relative top-auto right-auto bottom-auto left-auto w-full h-[408px]">
         <Image
           src="/logos/lightrays.png"
           alt="BAC Trivia Logo"
           width={80}
           height={35}
           className="w-[537px] h-[409px]"
-          data-oid="sta56-a"
         />
 
         <Image
@@ -98,56 +91,38 @@ export default function RegisterPage() {
           height={40}
           priority
           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 auto z-10 drop-shadow-xl rounded-lg w-[35%] max-w-md"
-          data-oid="1nh._e6"
         />
       </div>
-      <div
-        className="max-w-md w-full bg-white rounded-lg shadow-md flex flex-col justify-center p-[24px]"
-        data-oid="h8c.7le"
-      >
+      <div className="max-w-md w-full bg-white rounded-lg shadow-md flex flex-col justify-center p-[24px]">
         {" "}
         {/* */}
-        <h2
-          className="text-2xl font-bold text-center mb-6 text-[#000000]"
-          data-oid="m05ladp"
-        >
+        <h2 className="text-2xl font-bold text-center mb-6 text-[#000000]">
           {" "}
           {/* */}
           Registrate
         </h2>
         {/* Show messages and "Go to Login" button if registration attempt is complete */}
         {isRegistrationComplete ? (
-          <div className="space-y-4 text-center" data-oid="yfmuvv.">
+          <div className="space-y-4 text-center">
             {successMessage && (
-              <div
-                className="p-3 bg-green-100 border border-green-300 rounded-md text-green-700 text-sm"
-                data-oid="b2dw2bn"
-              >
+              <div className="p-3 bg-green-100 border border-green-300 rounded-md text-green-700 text-sm">
                 {successMessage}
               </div>
             )}
             {error && (
-              <div
-                className="p-3 bg-red-100 border border-red-300 rounded-md text-red-700 text-sm"
-                data-oid="t8q3po1"
-              >
+              <div className="p-3 bg-red-100 border border-red-300 rounded-md text-red-700 text-sm">
                 {error}
               </div>
             )}
             <Button
               onClick={handleGoToLogin}
               className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3" // Changed text color to white for better contrast on red
-              data-oid="4y67kk9"
             >
               Ir a Iniciar Sesión
             </Button>
           </div> // Show registration form if registration attempt is not yet complete
         ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-4"
-            data-oid="wargl75"
-          >
+          <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Nuevo Usuario"
               id="nombre"
@@ -156,7 +131,6 @@ export default function RegisterPage() {
               onChange={(e) => setNombre(e.target.value)}
               required
               disabled={isLoading}
-              data-oid="55y5lac"
             />
             {/* */}
             {/* If we want to re-enable Apellido and Cedula inputs, we can uncomment them here.
@@ -178,29 +152,23 @@ export default function RegisterPage() {
             disabled={isLoading}
             />
             */}
-            {error && (
-              <p className="text-sm text-red-600" data-oid="45289n:">
-                {error}
-              </p>
-            )}{" "}
+            {error && <p className="text-sm text-red-600">{error}</p>}{" "}
             {/* This error is for form validation before submission */}
             <Button
               type="submit"
               className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3" // Changed text color to white
               isLoading={isLoading}
               disabled={isLoading}
-              data-oid="jq7y-vq"
             >
               Registrarme
             </Button>
-            <p className="text-sm text-center text-gray-600" data-oid="-9et9k6">
+            <p className="text-sm text-center text-gray-600">
               {" "}
               {/* */}
               ¿Ya tienes cuenta?{" "}
               <a
                 href="/login"
                 className="font-medium text-red-600 hover:text-red-700 underline"
-                data-oid="a:_0qh3"
               >
                 {" "}
                 {/* */}
@@ -209,17 +177,13 @@ export default function RegisterPage() {
             </p>
           </form>
         )}
-        <div
-          className="relative top-auto right-auto bottom-auto left-auto flex items-center justify-center"
-          data-oid="y0htydv"
-        >
+        <div className="relative top-auto right-auto bottom-auto left-auto flex items-center justify-center">
           <Image
             src="/logos/bac_logo.png"
             alt="BAC Logo"
             width={80}
             height={20}
             className="w-auto mt-[16px]"
-            data-oid="6jk3-dh"
           />{" "}
           {/* */}
         </div>
