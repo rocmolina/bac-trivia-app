@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Needed for routing
+import { useEffect } from "react";
+import { useRouter } from "next/navigation"; // Needed for routing
+import Button from "@/components/ui/Button";
 
 declare global {
   interface Window {
@@ -11,17 +12,17 @@ declare global {
   }
 }
 
-const IFRAME_ID = 'my-iframe';
-const CONTROLS_ID = 'iframeControls';
-const LOGO_ID = 'poweredByLogo';
-const INNER_FRAME_URL = 'https://bactrivia.8thwall.app/bactrivia/';
+const IFRAME_ID = "my-iframe";
+const CONTROLS_ID = "iframeControls";
+const LOGO_ID = "poweredByLogo";
+const INNER_FRAME_URL = "https://bactrivia.8thwall.app/bactrivia/";
 
 const WebARViewer = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.8thwall.com/web/iframe/iframe.js';
+    const script = document.createElement("script");
+    script.src = "https://cdn.8thwall.com/web/iframe/iframe.js";
     script.async = true;
 
     script.onload = () => {
@@ -32,47 +33,46 @@ const WebARViewer = () => {
       const controls = document.getElementById(CONTROLS_ID);
       const poweredByLogo = document.getElementById(LOGO_ID);
 
-      window.addEventListener('message', (event) => {
-  // Por seguridad, verifica el origen del mensaje (ajusta el dominio a tu iframe real)
-  // if (event.origin !== 'https://bactrivia.8thwall.app') return;
+      window.addEventListener("message", (event) => {
+        // Por seguridad, verifica el origen del mensaje (ajusta el dominio a tu iframe real)
+        // if (event.origin !== 'https://bactrivia.8thwall.app') return;
 
-  const { qrCodeData, type, path } = event.data || {};
+        const { qrCodeData, type, path } = event.data || {};
 
-  // Procesar qrCodeData si existe
-  if (qrCodeData) {
-    console.log('Dato recibido desde iframe:', qrCodeData);
-    // Aquí puedes hacer algo con qrCodeData
-  }
+        // Procesar qrCodeData si existe
+        if (qrCodeData) {
+          console.log("Dato recibido desde iframe:", qrCodeData);
+          // Aquí puedes hacer algo con qrCodeData
+        }
 
-  // Manejar mensaje de navegación
-  if (type === 'navigate' && typeof path === 'string') {
-    router.push(path);
-    return;
-  }
+        // Manejar mensaje de navegación
+        if (type === "navigate" && typeof path === "string") {
+          router.push(path);
+          return;
+        }
 
-  // Manejar mensaje acceptedCamera
-  if (event.data === 'acceptedCamera') {
-    if (controls) {
-      controls.style.opacity = '0';
+        // Manejar mensaje acceptedCamera
+        if (event.data === "acceptedCamera") {
+          if (controls) {
+            controls.style.opacity = "0";
 
-      const styleCleanup = setTimeout(() => {
-        if (poweredByLogo) poweredByLogo.style.display = 'none';
-        controls.style.display = 'block';
-      }, 300);
+            const styleCleanup = setTimeout(() => {
+              if (poweredByLogo) poweredByLogo.style.display = "none";
+              controls.style.display = "block";
+            }, 300);
 
-      const uiFadeIn = setTimeout(() => {
-        controls.classList.add('fade-in');
-      }, 800);
+            const uiFadeIn = setTimeout(() => {
+              controls.classList.add("fade-in");
+            }, 800);
 
-      setTimeout(() => {
-        clearTimeout(styleCleanup);
-        clearTimeout(uiFadeIn);
-      }, 900);
-    }
-    return;
-  }
-});
-
+            setTimeout(() => {
+              clearTimeout(styleCleanup);
+              clearTimeout(uiFadeIn);
+            }, 900);
+          }
+          return;
+        }
+      });
     };
 
     document.body.appendChild(script);
@@ -82,7 +82,7 @@ const WebARViewer = () => {
   }, [router]);
 
   return (
-    <div className="relative">
+    <div className="relative" data-oid="2qdne1i">
       <iframe
         id={IFRAME_ID}
         title="8th Wall AR"
@@ -90,14 +90,23 @@ const WebARViewer = () => {
         allow="camera;gyroscope;accelerometer;magnetometer;xr-spatial-tracking;microphone;"
         allowFullScreen
         style={{
-          border: 'none',
-          width: '100%',
-          height: '100vh',
+          border: "none",
+          width: "100%",
+          height: "100vh",
           margin: 0,
           padding: 0,
-          display: 'block',
+          display: "block",
         }}
+        data-oid="m4iluxv"
       />
+
+      <Button
+        className="fixed bottom-8 left-1/2 transform -translate-x-1/2"
+        onClick={() => router.push("/profile")}
+        data-oid="9one8pa"
+      >
+        Back to Menu
+      </Button>
     </div>
   );
 };
