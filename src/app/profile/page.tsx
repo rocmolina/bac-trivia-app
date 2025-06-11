@@ -92,14 +92,14 @@ function ProfileContent() {
     );
   };
   return (
-    <div className="min-h-screen flex items-center flex-col justify-start h-screen w-full fixed top-auto right-auto bottom-auto left-auto">
-      <div className="flex items-center right-0 bottom-0 left-0 top-0 relative w-full justify-center p-[24px] h-full">
+    <div className="flex flex-col h-screen overflow-hidden">
+      <div className="flex-1 overflow-hidden items-center justify-center flex relative top-auto right-auto bottom-auto left-auto">
         <Image
           src="/logos/lightrays.png"
           alt="BAC Trivia Logo"
           width={80}
           height={35}
-          className="w-full h-[408px] absolute -top-20 z-0"
+          className="w-full h-auto z-0 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
         />
 
         <Image
@@ -107,7 +107,7 @@ function ProfileContent() {
           alt="BAC Trivia Logo"
           width={80}
           height={35}
-          className="w-[128px] z-10"
+          className="w-[128px] z-10 relative top-auto right-auto bottom-auto left-auto"
         />
       </div>
 
@@ -156,8 +156,8 @@ function ProfileContent() {
 } // --- Componente de Página Exportado ---
 export default function ProfilePage() {
   return (
-    <ProtectedRoute>
-      <ProfileContent />
+    <ProtectedRoute data-oid="q2fvw82">
+    <ProfileContent />
     </ProtectedRoute>
   );
 }
