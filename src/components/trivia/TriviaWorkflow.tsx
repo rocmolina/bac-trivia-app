@@ -44,6 +44,7 @@ export default function TriviaWorkflow() {
 
   useEffect(() => {
     const qrCodeDataFromParams = searchParams.get("qrCodeData");
+    //const qrCodeDataFromParams = "TOTEM01_Ahorro_INFO"; // Para pruebas, usar un valor fijo
     console.log("TriviaWorkflow: qrCodeDataFromParams:", qrCodeDataFromParams);
     if (!userFirestoreId) {
       setErrorLoading("Error de usuario. Intenta iniciar sesión de nuevo.");
@@ -201,8 +202,7 @@ export default function TriviaWorkflow() {
     return (
       <div
         style={{ width: iconDisplaySize, height: iconDisplaySize }}
-        className="relative w-[96px] h-[96px]"
-        data-oid="srnkv7k"
+        className="relative w-[96px] h-[96px] flex justify-center items-center"
       >
         <Image
           src={svgPath}
@@ -214,8 +214,7 @@ export default function TriviaWorkflow() {
           // y se quieres simular el efecto del className={iconClass} anterior.
           // Pero si los SVGs ya son blancos o tienen su propio estilo, esto no es necesario.
 
-          className="relative top-auto right-auto bottom-auto left-auto"
-          data-oid="_9t0ptd"
+          className=""
         />
       </div>
     );
@@ -226,8 +225,8 @@ export default function TriviaWorkflow() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-10" data-oid="c:mg_a-">
-        <p className="text-lg animate-pulse text-gray-700" data-oid=":tiudpa">
+      <div className="flex items-center justify-center p-10">
+        <p className="text-lg animate-pulse text-gray-700">
           Cargando trivia...
         </p>
       </div>
@@ -239,31 +238,20 @@ export default function TriviaWorkflow() {
     // Igualmente, se podría querer añadir errorSubmitting aquí si es relevante y no hay pregunta
     // Por ahora, errorSubmitting se manejará dentro del renderizado de la pregunta.
     return (
-      <div
-        className="flex flex-col items-center justify-center min-h-screen p-4"
-        data-oid="w.ei7ar"
-      >
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
         {" "}
         {/* Contenedor para centrar */}
-        <div
-          className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg text-center text-gray-800 relative"
-          data-oid="jh2yw6_"
-        >
-          <div
-            className="absolute top-4 left-1/2 -translate-x-1/2 transform"
-            data-oid=":wdvvn-"
-          >
+        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg text-center text-gray-800 relative">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 transform">
             <Image
               src="/logos/bactrivia_logo.svg"
               alt="BAC Trivia Logo"
               width={80}
               height={60}
-              data-oid="_kponos"
             />
           </div>
           <p
             className={`text-xl mb-6 mt-16 ${errorLoading ? "text-red-600" : "text-blue-700"}`}
-            data-oid="l81xj_b"
           >
             {errorLoading || apiStatusMessage}
           </p>
@@ -271,7 +259,6 @@ export default function TriviaWorkflow() {
             onClick={() => router.push("/profile")}
             variant="secondary"
             className="border-red-600 text-red-600 hover:bg-red-100"
-            data-oid="ksgq5hf"
           >
             Volver al Perfil
           </Button>
@@ -283,34 +270,23 @@ export default function TriviaWorkflow() {
   if (!question && !isLoading) {
     // Añadido !isLoading para ser más explícito
     return (
-      <div
-        className="flex flex-col items-center justify-center min-h-screen p-4"
-        data-oid=".dlvz3s"
-      >
-        <div
-          className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg text-center text-gray-800 relative"
-          data-oid="8750qn7"
-        >
-          <div
-            className="absolute top-4 left-1/2 -translate-x-1/2 transform"
-            data-oid="_ujh_xj"
-          >
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg text-center text-gray-800 relative">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 transform">
             <Image
               src="/logos/bactrivia_logo.svg"
               alt="BAC Trivia Logo"
               width={80}
               height={60}
-              data-oid="vwk-wd1"
             />
           </div>
-          <p className="text-xl text-gray-600 mb-6 mt-16" data-oid="vkj8ys0">
+          <p className="text-xl text-gray-600 mb-6 mt-16">
             No hay pregunta disponible en este momento.
           </p>
           <Button
             onClick={() => router.push("/profile")}
             variant="secondary"
             className="border-red-600 text-red-600 hover:bg-red-100"
-            data-oid="8ch3od3"
           >
             Volver al Perfil
           </Button>
@@ -322,8 +298,8 @@ export default function TriviaWorkflow() {
   // Si llegamos aquí y question es null, algo anda mal.
   if (!question) {
     return (
-      <div className="flex items-center justify-center p-10" data-oid="twdve_7">
-        <p className="text-lg text-red-600" data-oid="wku4b5g">
+      <div className="flex items-center justify-center p-10">
+        <p className="text-lg text-red-600">
           Error: No se pudo cargar la pregunta.
         </p>
       </div>
@@ -332,19 +308,13 @@ export default function TriviaWorkflow() {
 
   // Renderizado de la pregunta
   return (
-    <div
-      className="flex items-center min-h-screen sm:p-4 bg-red-500 flex-col justify-start w-full h-full fixed top-auto right-auto bottom-auto left-auto p-0"
-      data-oid="xa9ffwx"
-    >
+    <div className="h-full w-full bg-red-500 flex flex-col">
       {" "}
       {/* Fondo general gris claro */}
-      <div
-        className="w-full max-w-lg rounded-xl shadow-2xl overflow-hidden h-full flex flex-col"
-        data-oid="b4k-8fb"
-      >
+      <div className="w-full h-full flex flex-col items-center">
         {/* Cabecera Roja */}
 
-        <div className="mt-20 text-center h-auto pb-[16px]" data-oid="xbsmp3t">
+        <div className="relative w-full h-[300px]">
           {" "}
           {/* Espacio para el logo */}
           <Image
@@ -352,50 +322,27 @@ export default function TriviaWorkflow() {
             alt="BAC Trivia Logo"
             width={90}
             height={60}
-            className="w-full right-auto bottom-auto absolute left-0 -top-20 mix-blend-screen"
-            data-oid="x9fvnxl"
+            className="absolute -translate-y-1/2 w-full left-0 top-1/2 z-0"
           />
-          <div
-            className="inline-block mb-2 relative top-auto right-auto bottom-auto left-auto"
-            data-oid="ycyx.w0"
-          >
+          <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">
             {getCategoryIcon(question.category)}
           </div>
-          <div
-            className="relative top-auto right-auto bottom-auto left-1/2 transform -translate-x-1/2 text-[#FFFFFF] rounded-full bg-red-700 w-[172px]"
-            data-oid="dl.69zr"
-          ></div>
         </div>
 
         {/* Contenido Blanco */}
-        <div
-          className="bg-white p-6 sm:p-8 text-gray-800 h-full rounded-tl-[12px] rounded-tr-[12px] w-full flex flex-col justify-between"
-          data-oid="ug:szp5"
-        >
-          <div data-oid="13n7ppx">
-            <div
-              className="flex flex-col items-center justify-center bg-red-700 rounded-full mb-[24px]"
-              data-oid="zl73b6i"
-            >
-              <h1
-                className="text-2xl sm:text-3xl font-bold text-white text"
-                data-oid="_t3sces"
-              >
+        <div className="flex-1 bg-white rounded-tl-[12px] rounded-tr-[12px] p-[32px] max-w-[1000px] flex flex-col justify-between z-10">
+          <div>
+            <div className="flex flex-col items-center justify-center bg-red-700 rounded-full mb-[24px]">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white text">
                 {question.category}
               </h1>
             </div>
-            <div
-              className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-md"
-              data-oid="tu6w1yy"
-            >
-              <p
-                className="text-md sm:text-lg text-gray-800 leading-relaxed"
-                data-oid="_e6azpq"
-              >
+            <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-md">
+              <p className="text-md sm:text-lg text-gray-800 leading-relaxed">
                 {question.questionText}
               </p>
             </div>
-            <div className="space-y-3 h-fit" data-oid="k8:.n0o">
+            <div className="space-y-3 h-fit">
               {question.options.map((option, index) => (
                 <button
                   key={index}
@@ -404,12 +351,8 @@ export default function TriviaWorkflow() {
                   className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all duration-150 text-gray-800
                                             ${selectedOptionIndex === index ? "bg-red-600 text-white border-red-700 ring-2 ring-red-700 shadow-md" : "bg-white border-gray-300 hover:bg-red-100 hover:border-red-500"} 
                                             ${isSubmitting || !!errorSubmitting ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
-                  data-oid="tywsb8w"
                 >
-                  <span
-                    className="font-semibold mr-2 text-gray-700"
-                    data-oid="k-dl8mx"
-                  >
+                  <span className="font-semibold mr-2 text-gray-700">
                     {String.fromCharCode(65 + index)}.
                   </span>
                   {option}
@@ -418,13 +361,10 @@ export default function TriviaWorkflow() {
             </div>
           </div>
 
-          <div className="mt-6 text-center" data-oid="._bnvl0">
+          <div className="mt-6 text-center">
             {/* Mostrar error de envío si existe */}
             {errorSubmitting && (
-              <p
-                className="mb-4 text-lg font-semibold text-red-600"
-                data-oid=":f.-xkj"
-              >
+              <p className="mb-4 text-lg font-semibold text-red-600">
                 Error: {errorSubmitting}
               </p>
             )}
@@ -438,7 +378,6 @@ export default function TriviaWorkflow() {
               }
               isLoading={isSubmitting}
               className="w-full text-lg py-3 bg-red-600 hover:bg-red-700 text-black font-semibold"
-              data-oid="5:otwjq"
             >
               Enviar Respuesta
             </Button>

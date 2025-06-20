@@ -49,9 +49,9 @@ const ProtectedAdminRoute: React.FC<{ children: React.ReactNode }> = ({
     return (
       <div
         className="flex items-center justify-center min-h-screen"
-        data-oid="gbjqjea"
+        data-oid="a7iq0wm"
       >
-        <p data-oid="1_whlpx">Verificando acceso admin (hidratando)...</p>
+        <p data-oid="wga9cej">Verificando acceso admin (hidratando)...</p>
       </div>
     );
 
@@ -59,9 +59,9 @@ const ProtectedAdminRoute: React.FC<{ children: React.ReactNode }> = ({
   return (
     <div
       className="flex items-center justify-center min-h-screen"
-      data-oid="xz6f6w8"
+      data-oid="ztfnior"
     >
-      <p data-oid="l-qgy98">Acceso denegado. Redirigiendo a login...</p>
+      <p data-oid="ihf66i_">Acceso denegado. Redirigiendo a login...</p>
     </div>
   );
 };
@@ -204,33 +204,33 @@ function AdminDashboardContent() {
   return (
     <div
       className="container mx-auto p-4 sm:p-6 lg:p-8 bg-gray-100 min-h-screen relative text-gray-800"
-      data-oid="uslunv9"
+      data-oid="_q_1vkl"
     >
       <div
         className="absolute top-4 right-4 sm:top-28 sm:right-6 z-10"
-        data-oid="p.36w0x"
+        data-oid="6e3-oib"
       >
         <Image
           src="/logos/bactrivia_logo.svg"
           alt="BAC Trivia Logo"
           width={100}
           height={40}
-          data-oid="hagmjw7"
+          data-oid="e_qcspk"
         />
       </div>
 
       <header
         className="mb-8 flex flex-wrap justify-between items-start gap-4 pb-4 border-b border-gray-300"
-        data-oid="h508:k:"
+        data-oid="2_o5yqh"
       >
-        <div data-oid="qiqtbe5">
-          <h1 className="text-3xl font-bold text-gray-900" data-oid="j._byx1">
+        <div data-oid="3dt.cuk">
+          <h1 className="text-3xl font-bold text-gray-900" data-oid="obnw.hm">
             Admin Dashboard
           </h1>
           {adminNombre && (
-            <p className="text-gray-700 mt-1" data-oid="c_8gt4o">
+            <p className="text-gray-700 mt-1" data-oid="ffdxizi">
               Bienvenido,{" "}
-              <span className="font-semibold" data-oid="h1y16u9">
+              <span className="font-semibold" data-oid="0iqy7m-">
                 {adminNombre}
               </span>
             </p>
@@ -241,7 +241,7 @@ function AdminDashboardContent() {
           variant="secondary"
           size="md"
           className="bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 hover:border-red-400"
-          data-oid="cof8qbf"
+          data-oid="3e1ydjf"
         >
           Cerrar Sesión Admin
         </Button>
@@ -249,23 +249,23 @@ function AdminDashboardContent() {
 
       <section
         className="mb-10 p-6 bg-white shadow-xl rounded-lg border border-gray-200"
-        data-oid="id7tf85"
+        data-oid="8.nfhp1"
       >
         <h2
           className="text-xl font-semibold text-gray-800 mb-4"
-          data-oid="wwd3.f1"
+          data-oid="lg7k2tx"
         >
           Control de Estado de la Aplicación
         </h2>
         {isLoadingStatus && (
-          <p className="text-gray-500" data-oid="w5qm:m8">
+          <p className="text-gray-500" data-oid="b7pwuvi">
             Cargando estado...
           </p>
         )}
         {statusError && (
           <p
             className="text-red-600 bg-red-50 p-3 rounded-md"
-            data-oid=".65lcfv"
+            data-oid="1fkd_i6"
           >
             {statusError}
           </p>
@@ -273,7 +273,7 @@ function AdminDashboardContent() {
         {!isLoadingStatus && !statusError && (
           <div
             className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4"
-            data-oid="w6_hyiy"
+            data-oid="_er72x9"
           >
             <Button
               onClick={handleToggleAppStatus}
@@ -285,7 +285,7 @@ function AdminDashboardContent() {
                                             ? "bg-red-500 hover:bg-red-600 text-white"
                                             : "bg-green-500 hover:bg-green-600 text-white"
                                         }`}
-              data-oid="ed4d9bn"
+              data-oid="5w_k-s5"
             >
               {isUpdatingStatus
                 ? "Actualizando..."
@@ -295,35 +295,35 @@ function AdminDashboardContent() {
             </Button>
             <p
               className={`text-lg font-semibold p-3 rounded-md ${isAppActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
-              data-oid="jclnptb"
+              data-oid="mpeh58l"
             >
               Estado Actual: {isAppActive ? "Activada" : "Desactivada"}
             </p>
           </div>
         )}
-        <p className="text-xs text-gray-500 mt-3" data-oid="nx.crhu">
+        <p className="text-xs text-gray-500 mt-3" data-oid="_p1sf5:">
           Esta opción controla si los usuarios (no administradores) pueden
           acceder y usar las funciones principales de la aplicación.
         </p>
       </section>
 
-      <section data-oid="d3lpsns">
+      <section data-oid="v-k_j9w">
         <h2
           className="text-2xl text-center font-semibold text-gray-800 mb-4"
-          data-oid="1iva5u2"
+          data-oid="an_w-xn"
         >
           Tabla de Jugadores
         </h2>
         <h3
           className="text-2xl text-center font-semibold text-gray-800 mb-4"
-          data-oid=":d2l4.f"
+          data-oid="4by04di"
         >
           (En Tiempo Real)
         </h3>
         {isLoadingUsers && (
           <p
             className="text-center text-lg text-gray-600 py-8"
-            data-oid="qxra95p"
+            data-oid="5ky:f1y"
           >
             Cargando usuarios...
           </p>
@@ -331,7 +331,7 @@ function AdminDashboardContent() {
         {usersError && (
           <p
             className="text-center text-red-600 bg-red-100 p-4 rounded-md"
-            data-oid="pizy6pq"
+            data-oid="yvkk.44"
           >
             {usersError}
           </p>
@@ -339,32 +339,32 @@ function AdminDashboardContent() {
         {!isLoadingUsers && !usersError && (
           <div
             className="bg-white shadow-xl rounded-lg overflow-x-auto"
-            data-oid="gts9v.z"
+            data-oid="4xs3f9b"
           >
             <table
               className="min-w-full divide-y divide-gray-300"
-              data-oid="lmht6eg"
+              data-oid="hrb9gz."
             >
-              <thead className="bg-red-700" data-oid="13tf9at">
-                <tr data-oid="4qisi4t">
+              <thead className="bg-red-700" data-oid="v-pas1h">
+                <tr data-oid="_upde2z">
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider sticky top-0 bg-red-700 z-10"
-                    data-oid="_ykm7_k"
+                    data-oid="ikd6waz"
                   >
                     Usuario ID
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider sticky top-0 bg-red-700 z-10"
-                    data-oid="0ja8.aj"
+                    data-oid="1z085ir"
                   >
                     Puntos
                   </th>
                   <th
                     scope="col"
                     className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider sticky top-0 bg-red-700 z-10"
-                    data-oid="_v2i7a-"
+                    data-oid="o48m09l"
                   >
                     More
                   </th>
@@ -372,14 +372,14 @@ function AdminDashboardContent() {
               </thead>
               <tbody
                 className="bg-white divide-y divide-gray-200"
-                data-oid="6f589sb"
+                data-oid="62e5_81"
               >
                 {users.length === 0 ? (
-                  <tr data-oid="msadii.">
+                  <tr data-oid="h2t91n5">
                     <td
                       colSpan={3}
                       className="px-6 py-4 text-sm text-gray-500 text-center"
-                      data-oid="iae6i3g"
+                      data-oid=".wtp5mq"
                     >
                       No hay usuarios.
                     </td>
@@ -389,29 +389,29 @@ function AdminDashboardContent() {
                     <tr
                       key={user.firestoreId}
                       className="hover:bg-red-50 transition-colors duration-150"
-                      data-oid="e_t9ocx"
+                      data-oid="2h046c8"
                     >
                       <td
                         className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                        data-oid="ee4nex9"
+                        data-oid="l-vkt1w"
                       >
                         {user.usuarioId}
                       </td>
                       <td
                         className="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-700"
-                        data-oid="g_50drz"
+                        data-oid="-64y8-p"
                       >
                         {user.puntos}
                       </td>
                       <td
                         className="px-4 py-3 whitespace-nowrap text-sm"
-                        data-oid="n7j6o_i"
+                        data-oid="3t75oeu"
                       >
                         <Button
                           onClick={() => openEditModal(user)}
                           size="sm"
                           className="!px-4 !py-1.5 !text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm"
-                          data-oid="xywveo2"
+                          data-oid="1x84mgn"
                         >
                           ...
                         </Button>
@@ -433,7 +433,7 @@ function AdminDashboardContent() {
         isUpdating={isUpdatingUser}
         updateError={updateUserError}
         clearUpdateError={() => setUpdateUserError(null)}
-        data-oid="t_9tsmn"
+        data-oid="1ehbvcj"
       />
     </div>
   );
@@ -441,8 +441,8 @@ function AdminDashboardContent() {
 
 export default function AdminDashboardPage() {
   return (
-    <ProtectedAdminRoute data-oid=".vi13ma">
-      <AdminDashboardContent data-oid="v2jyu0k" />
+    <ProtectedAdminRoute data-oid="lylraq1">
+      <AdminDashboardContent data-oid="7fu.w5t" />
     </ProtectedAdminRoute>
   );
 }

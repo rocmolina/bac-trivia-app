@@ -63,12 +63,10 @@ function ProfileContent() {
         : category.name;
 
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg shadow-md bg-red-100 p-[10px] min-h-[150px] pt-[10px] pb-[10px]">
+      <div className="flex flex-col items-center justify-center rounded-lg shadow-md bg-red-100 p-2">
         {/* Puntaje por categoría */}
 
-        <div
-          className={`w-[<span class="math-inline">\{imageSize\}px\] h\-\[</span>{imageSize}px] flex items-center justify-center`}
-        >
+        <div className="h-1/2">
           <Image
             src={category.svgUrl}
             alt={category.name}
@@ -77,7 +75,7 @@ function ProfileContent() {
             onError={() => {
               console.warn(`Error al cargar SVG: ${category.svgUrl}`);
             }}
-            className="h-[72px]"
+            className="h-full"
           />
         </div>
 
@@ -92,14 +90,14 @@ function ProfileContent() {
     );
   };
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <div className="flex-1 overflow-hidden items-center justify-center flex relative top-auto right-auto bottom-auto left-auto">
+    <div className="h-full w-full flex flex-col items-center">
+      <div className="h-[300px] w-full relative flex flex-col items-center justify-center">
         <Image
           src="/logos/lightrays.png"
           alt="BAC Trivia Logo"
           width={80}
           height={35}
-          className="w-full h-auto z-0 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+          className="w-full z-0 top-1/2 -translate-y-1/2 absolute"
         />
 
         <Image
@@ -107,11 +105,11 @@ function ProfileContent() {
           alt="BAC Trivia Logo"
           width={80}
           height={35}
-          className="w-[128px] z-10 relative top-auto right-auto bottom-auto left-auto"
+          className="w-[128px] z-10 relative"
         />
       </div>
 
-      <div className="bg-white p-6 rounded-b-xl text-gray-800 flex-col rounded-tl-[12px] rounded-tr-[12px] rounded-bl-none rounded-br-none w-full flex items-stretch justify-between gap-[24px] top-0 right-0 bottom-0 left-0 relative h-fit">
+      <div className="w-full max-w-[1000px] flex flex-1 flex-col bg-white p-4 rounded-tl-[12px] rounded-tr-[12px] items-stretch justify-between gap-[24px] relative">
         {/* Sección de Puntajes por Categoría */}
 
         <div>
@@ -122,12 +120,12 @@ function ProfileContent() {
             {puntosTotales ?? 0} pts
           </p>
         </div>
-        <div className="m-0 h-fit-content">
+        <div className="flex flex-1 flex-col">
           <h3 className="text-sm font-semibold text-gray-900 mb-4 text-center">
             Puntos por Categoría
           </h3>
           {/* Grid para las 4 categorías */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 sm:gap-4 w-full gap-[24px]">
+          <div className="h-full grid grid-cols-2 gap-5">
             {CATEGORIES.map((cat) => (
               <CategoryDisplay key={cat.id} category={cat} />
             ))}
@@ -156,8 +154,8 @@ function ProfileContent() {
 } // --- Componente de Página Exportado ---
 export default function ProfilePage() {
   return (
-    <ProtectedRoute data-oid="q2fvw82">
-    <ProfileContent />
+    <ProtectedRoute>
+      <ProfileContent />
     </ProtectedRoute>
   );
 }

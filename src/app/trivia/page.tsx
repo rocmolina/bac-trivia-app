@@ -16,7 +16,7 @@ function TriviaLoadingFallback() {
 // Este es el componente que se exporta para la ruta /trivia
 function TriviaPageContent() {
   return (
-    <div className="flex-col items-center justify-center min-h-screen bg-gray-100 p-4 top-auto right-auto bottom-auto left-auto relative w-full flex h-full">
+    <div className="w-full h-full">
       {/* Suspense es necesario porque TriviaWorkflow usa useSearchParams */}
       <Suspense fallback={<TriviaLoadingFallback />}>
         <TriviaWorkflow />

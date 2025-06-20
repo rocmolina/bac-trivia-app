@@ -11,7 +11,7 @@ module.exports = {
       colors: {
         "red-100": "#FCE6EA",
         // Colores basados en el pdf de requerimientos
-        "red-500": "#E5002B",
+        "red-500": "#E4002B",
         // Un rojo BAC común (ajustar al valor exacto)
         "red-700": "#84232E",
         // Un tono más oscuro del rojo BAC para hovers, etc.
