@@ -113,10 +113,10 @@ function ProfileContent() {
         {/* Sección de Puntajes por Categoría */}
 
         <div>
-          <h2 className="text-2xl font-semibold text-center">
+          <h2 className="text-2xl font-semibold text-center text-[#000000]">
             {nombre} {apellido}
           </h2>
-          <p className="font-bold text-[48px] text-center leading-[60px]">
+          <p className="font-bold text-[48px] text-center leading-[60px] text-[#000000]">
             {puntosTotales ?? 0} pts
           </p>
         </div>
