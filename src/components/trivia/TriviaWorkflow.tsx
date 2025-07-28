@@ -13,6 +13,8 @@ import {
 } from "@/lib/services/api";
 import Image from "next/image"; // <--- IMPORTAR Image
 
+let isGolden = false; // Variable para controlar el estado del tótem dorado
+
 interface TriviaQuestionView {
   triviaId: string;
   category: string;
@@ -44,7 +46,9 @@ export default function TriviaWorkflow() {
 
   useEffect(() => {
     const qrCodeDataFromParams = searchParams.get("qrCodeData");
-    //const qrCodeDataFromParams = "TOTEM01_Ahorro_INFO"; // Para pruebas, usar un valor fijo
+    const isGoldenParam = searchParams.get("isGolden");
+    isGolden = isGoldenParam === 'true';
+    
     console.log("TriviaWorkflow: qrCodeDataFromParams:", qrCodeDataFromParams);
     if (!userFirestoreId) {
       setErrorLoading("Error de usuario. Intenta iniciar sesión de nuevo.");
@@ -146,9 +150,17 @@ export default function TriviaWorkflow() {
       }
 
       // Redirigir a la página de resultado con parámetros
-      router.push(
+      if( isGolden) {
+        router.push(
+        `/trivia/result?success=${result.correct}&category=${encodeURIComponent(question.category)}&points=${result.pointsGained * 2}`,
+      );
+      }
+      else {
+        router.push(
         `/trivia/result?success=${result.correct}&category=${encodeURIComponent(question.category)}&points=${result.pointsGained}`,
       );
+      }
+      
     } catch (error: any) {
       console.error("TriviaWorkflow: Error enviando respuesta:", error);
       const errMsg =
@@ -180,7 +192,11 @@ export default function TriviaWorkflow() {
     let svgPath = "/icons/default.svg"; // Fallback a un ícono por defecto
     switch (category?.toLowerCase()) {
       case "ahorro":
-        svgPath = "/icons/ahorro.svg";
+        if (isGolden) {
+          svgPath = "/icons/ahorro_golden.svg"; // Asumiendo que tienes un ícono dorado
+        } else {
+          svgPath = "/icons/ahorro.svg"; // Ícono normal de ahorro
+        }
         break;
       case "tarjeta":
         svgPath = "/icons/tarjeta.svg";
