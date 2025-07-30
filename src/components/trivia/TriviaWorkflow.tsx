@@ -46,7 +46,7 @@ export default function TriviaWorkflow() {
 
   useEffect(() => {
     const qrCodeDataFromParams = searchParams.get("qrCodeData");
-    const isGoldenParam = searchParams.get("isGolden");
+    const isGoldenParam = searchParams.get("isGolden"); // Nuevo parámetro para indicar si es un emoji dorado
     isGolden = isGoldenParam === 'true';
     
     console.log("TriviaWorkflow: qrCodeDataFromParams:", qrCodeDataFromParams);
@@ -150,9 +150,9 @@ export default function TriviaWorkflow() {
       }
 
       // Redirigir a la página de resultado con parámetros
-      if( isGolden) {
+      if(isGolden) {
         router.push(
-        `/trivia/result?success=${result.correct}&category=${encodeURIComponent(question.category)}&points=${result.pointsGained * 2}`,
+        `/trivia/result?success=${result.correct}&category=${encodeURIComponent(question.category)}&points=${result.pointsGained * 2}&isGolden=true`,
       );
       }
       else {
@@ -188,31 +188,20 @@ export default function TriviaWorkflow() {
     // El tamaño de la imagen SVG que se mostrará.
     // Ajustar estos valores según cómo se quiera ver el ícono en la cabecera de la trivia.
     // Corresponde aproximadamente a "w-16 h-16" que se tenia antes (64px si 1rem=16px).
-    const iconDisplaySize = 128;
+    const iconDisplaySize = 128
+    const validCategories = ["ahorro", "tarjeta", "casa", "carro"];
     let svgPath = "/icons/default.svg"; // Fallback a un ícono por defecto
-    switch (category?.toLowerCase()) {
-      case "ahorro":
-        if (isGolden) {
-          svgPath = "/icons/ahorro_golden.svg"; // Asumiendo que tienes un ícono dorado
-        } else {
-          svgPath = "/icons/ahorro.svg"; // Ícono normal de ahorro
-        }
-        break;
-      case "tarjeta":
-        svgPath = "/icons/tarjeta.svg";
-        break;
-      case "casa": // Asumiendo que tu archivo se llama 'casa.svg'
-        svgPath = "/icons/casa.svg";
-        break;
-      case "carro":
-        svgPath = "/icons/carro.svg";
-        break;
-      default:
-        console.warn(
+    const categoryLower = category?.toLowerCase();
+
+    if (categoryLower && validCategories.includes(categoryLower)) {
+
+      const suffix = isGolden ? "_golden" : ""; // Sufijo para el ícono dorado
+      svgPath = `/icons/${categoryLower}${suffix}.svg`;
+
+    } else {
+      console.warn(
           `Icono no encontrado para categoría: ${category}, usando default.`,
         );
-        // svgPath ya está establecido al default
-        break;
     }
 
     return (

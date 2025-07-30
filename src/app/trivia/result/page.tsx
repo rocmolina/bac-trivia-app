@@ -8,6 +8,8 @@ import Image from "next/image";
 import ProtectedRoute from "@/components/auth/ProtectedRoute"; // Para proteger la ruta
 import { CATEGORIES, CategoryId } from "@/lib/constants"; // Importar categorías
 
+let isGolden = false; // Variable para indicar si el ícono es dorado
+
 // Componente interno para evitar errores de Suspense con useSearchParams directamente en el default export
 function TriviaResultContent() {
   const router = useRouter();
@@ -22,6 +24,8 @@ function TriviaResultContent() {
     const successParam = searchParams.get("success");
     const categoryParam = searchParams.get("category") as CategoryId | null;
     const pointsParam = searchParams.get("points");
+    const isGoldenParam = searchParams.get("isGolden"); // Nuevo parámetro para indicar si es un emoji dorado
+    isGolden = isGoldenParam === 'true';
 
     if (successParam !== null && categoryParam) {
       setIsSuccess(successParam === "true");
