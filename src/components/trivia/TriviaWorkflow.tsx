@@ -13,7 +13,7 @@ import {
 } from "@/lib/services/api";
 import Image from "next/image"; // <--- IMPORTAR Image
 
-let isGolden = false; // Variable para controlar el estado del tótem dorado
+let isGoldenEmoji = false; // Variable para controlar el estado del tótem dorado
 
 interface TriviaQuestionView {
   triviaId: string;
@@ -47,8 +47,8 @@ export default function TriviaWorkflow() {
   useEffect(() => {
     const qrCodeDataFromParams = searchParams.get("qrCodeData");
     const isGoldenParam = searchParams.get("isGolden"); // Nuevo parámetro para indicar si es un emoji dorado
-    isGolden = isGoldenParam === 'true';
-    
+    isGoldenEmoji = isGoldenParam === 'true';
+
     console.log("TriviaWorkflow: qrCodeDataFromParams:", qrCodeDataFromParams);
     if (!userFirestoreId) {
       setErrorLoading("Error de usuario. Intenta iniciar sesión de nuevo.");
@@ -80,7 +80,7 @@ export default function TriviaWorkflow() {
         if (response.status) {
           setApiStatusMessage(
             response.message ||
-              `Estado: ${response.status}. ${response.cooldown_seconds_left ? `Espera ${response.cooldown_seconds_left}s.` : ""}`,
+            `Estado: ${response.status}. ${response.cooldown_seconds_left ? `Espera ${response.cooldown_seconds_left}s.` : ""}`,
           );
           setQuestion(null);
         } else if (
@@ -150,17 +150,15 @@ export default function TriviaWorkflow() {
       }
 
       // Redirigir a la página de resultado con parámetros
-      if(isGolden) {
-        router.push(
-        `/trivia/result?success=${result.correct}&category=${encodeURIComponent(question.category)}&points=${result.pointsGained * 2}&isGolden=true`,
-      );
-      }
-      else {
-        router.push(
-        `/trivia/result?success=${result.correct}&category=${encodeURIComponent(question.category)}&points=${result.pointsGained}`,
-      );
-      }
-      
+      const points = isGoldenEmoji ? result.pointsGained * 2 : result.pointsGained;
+      const params = new URLSearchParams({
+        success: String(result.correct),
+        category: question.category,
+        points: String(points),
+        isGolden: String(isGoldenEmoji), // Pasar el estado dorado
+      });
+      router.push(`/trivia/result?${params.toString()}`);
+
     } catch (error: any) {
       console.error("TriviaWorkflow: Error enviando respuesta:", error);
       const errMsg =
@@ -195,13 +193,13 @@ export default function TriviaWorkflow() {
 
     if (categoryLower && validCategories.includes(categoryLower)) {
 
-      const suffix = isGolden ? "_golden" : ""; // Sufijo para el ícono dorado
+      const suffix = isGoldenEmoji ? "_golden" : ""; // Sufijo para el ícono dorado
       svgPath = `/icons/${categoryLower}${suffix}.svg`;
 
     } else {
       console.warn(
-          `Icono no encontrado para categoría: ${category}, usando default.`,
-        );
+        `Icono no encontrado para categoría: ${category}, usando default.`,
+      );
     }
 
     return (

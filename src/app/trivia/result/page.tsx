@@ -8,7 +8,7 @@ import Image from "next/image";
 import ProtectedRoute from "@/components/auth/ProtectedRoute"; // Para proteger la ruta
 import { CATEGORIES, CategoryId } from "@/lib/constants"; // Importar categorías
 
-let isGolden = false; // Variable para indicar si el ícono es dorado
+let isGoldenEmoji = false; // Variable para indicar si el ícono es dorado
 
 // Componente interno para evitar errores de Suspense con useSearchParams directamente en el default export
 function TriviaResultContent() {
@@ -25,7 +25,7 @@ function TriviaResultContent() {
     const categoryParam = searchParams.get("category") as CategoryId | null;
     const pointsParam = searchParams.get("points");
     const isGoldenParam = searchParams.get("isGolden"); // Nuevo parámetro para indicar si es un emoji dorado
-    isGolden = isGoldenParam === 'true';
+    isGoldenEmoji = isGoldenParam === 'true';
 
     if (successParam !== null && categoryParam) {
       setIsSuccess(successParam === "true");
@@ -47,9 +47,9 @@ function TriviaResultContent() {
     (c) => c.id.toLowerCase() === category.toLowerCase(),
   );
   const imageBaseUrl = categoryDetails?.svgUrl || "/icons/default.svg";
-  const imageUrl = isSuccess
-    ? imageBaseUrl
-    : imageBaseUrl.replace(".svg", "_sad.svg");
+  let imageUrl = imageBaseUrl;
+  imageUrl = isGoldenEmoji ? imageBaseUrl.replace(".svg", "_golden.svg") : imageBaseUrl;
+  imageUrl = isSuccess ? imageBaseUrl : imageBaseUrl.replace(".svg", "_sad.svg");
   // Fallback si no existe la versión _sad, usa la normal
   const finalImageUrl = isSuccess
     ? imageBaseUrl
