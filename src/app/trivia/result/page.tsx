@@ -47,15 +47,15 @@ function TriviaResultContent() {
     (c) => c.id.toLowerCase() === category.toLowerCase(),
   );
   const imageBaseUrl = categoryDetails?.svgUrl || "/icons/default.svg";
-  let imageUrl = imageBaseUrl;
-  imageUrl = isGoldenEmoji ? imageBaseUrl.replace(".svg", "_golden.svg") : imageBaseUrl;
-  imageUrl = isSuccess ? imageBaseUrl : imageBaseUrl.replace(".svg", "_sad.svg");
-  // Fallback si no existe la versión _sad, usa la normal
-  const finalImageUrl = isSuccess
-    ? imageBaseUrl
-    : imageBaseUrl.includes("_sad.svg")
-      ? imageBaseUrl
-      : imageBaseUrl.replace(".svg", "_sad.svg");
+  let finalImageUrl = imageBaseUrl;
+
+  if (isGoldenEmoji) {
+    finalImageUrl = finalImageUrl.replace(".svg", "_golden.svg");
+  }
+
+  if (!isSuccess) {
+    finalImageUrl = finalImageUrl.replace(".svg", "_sad.svg");
+  }
 
   const title = isSuccess ? "¡Excelente Trabajo!" : "¡Oh No!";
   const message = isSuccess
