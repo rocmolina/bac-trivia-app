@@ -1,14 +1,13 @@
 // src/app/trivia/result/page.tsx
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, {Suspense, useEffect, useState} from "react";
+import {useRouter, useSearchParams} from "next/navigation";
 import Button from "@/components/ui/Button";
 import Image from "next/image";
 import ProtectedRoute from "@/components/auth/ProtectedRoute"; // Para proteger la ruta
-import { CATEGORIES, CategoryId } from "@/lib/constants"; // Importar categorías
+import {CATEGORIES, CategoryId} from "@/lib/constants"; // Importar categorías
 
-let isGoldenEmoji = false; // Variable para indicar si el ícono es dorado
 
 // Componente interno para evitar errores de Suspense con useSearchParams directamente en el default export
 function TriviaResultContent() {
@@ -19,13 +18,14 @@ function TriviaResultContent() {
   const [category, setCategory] = useState<CategoryId | null>(null);
   const [pointsGained, setPointsGained] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGolden, setIsGolden] = useState(false);
 
   useEffect(() => {
     const successParam = searchParams.get("success");
     const categoryParam = searchParams.get("category") as CategoryId | null;
     const pointsParam = searchParams.get("points");
     const isGoldenParam = searchParams.get("isGolden"); // Nuevo parámetro para indicar si es un emoji dorado
-    isGoldenEmoji = isGoldenParam === 'true';
+    setIsGolden(isGoldenParam === 'true');
 
     if (successParam !== null && categoryParam) {
       setIsSuccess(successParam === "true");
@@ -46,15 +46,18 @@ function TriviaResultContent() {
   const categoryDetails = CATEGORIES.find(
     (c) => c.id.toLowerCase() === category.toLowerCase(),
   );
-  const imageBaseUrl = categoryDetails?.svgUrl || "/icons/default.svg";
-  let finalImageUrl = imageBaseUrl;
 
-  if (isGoldenEmoji) {
+  let finalImageUrl = categoryDetails?.svgUrl || "/icons/default.svg";
+
+  if (isGolden) {
     finalImageUrl = finalImageUrl.replace(".svg", "_golden.svg");
   }
 
   if (!isSuccess) {
     finalImageUrl = finalImageUrl.replace(".svg", "_sad.svg");
+    if (isGolden) {
+      finalImageUrl = finalImageUrl.replace("_golden.svg", "_golden_sad.svg");
+    }
   }
 
   const title = isSuccess ? "¡Excelente Trabajo!" : "¡Oh No!";
@@ -101,7 +104,7 @@ function TriviaResultContent() {
             width={imageSize}
             height={imageSize}
             style={{ objectFit: "contain" }} // Fallback si la imagen _sad no carga, se podría intentar la normal.
-            // onError={(e) => { if (!isSuccess) e.currentTarget.src = imageBaseUrl; }} // Opcional
+            // onError={(e) => { if (!isSuccess) e.currentTarget.src = finalImageUrl; }} // Opcional
           />
         </div>
 

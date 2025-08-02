@@ -31,6 +31,13 @@ export default function RegisterPage() {
       return;
     }
 
+    // Validation to prevent whitespace in the username
+    if (/\s/.test(nombre)) {
+      setError("El nombre de usuario no puede contener espacios.");
+      setIsLoading(false);
+      return;
+    }
+
     // As per previous logic, apellido and cedula are defaulted to empty strings if not used.
     // For this example, we'll keep them in the state but not require them in the form explicitly
     // unless we plan to re-add those fields.
@@ -47,19 +54,19 @@ export default function RegisterPage() {
         nombre: nombre.trim(),
         apellido: currentApellido,
         cedula: currentCedula,
-      }); //
+      });
       console.log("Registro exitoso:", result);
       setSuccessMessage(
-        `¡Registro exitoso! Tu UsuarioID es: ${result.usuarioId}. Ahora puedes iniciar sesión.`,
-      ); //
+        `¡Registro exitoso! Tu UsuarioID es: ${result.usuarioId}. Ahora puedes iniciar sesión.`
+      );
       setIsRegistrationComplete(true); // Mark registration as complete to show the button
       // NO automatic redirect: setTimeout(() => router.push('/login'), 5000);
     } catch (err: any) {
       console.error("Error de registro:", err);
       const errorMessage =
-        err.response?.data?.error ||
+        err.response?.data?.message || // Use message from backend
         err.message ||
-        "Error al registrar el usuario."; //
+        "Error al registrar el usuario.";
       setError(errorMessage);
       setIsRegistrationComplete(true); // Also mark as complete to show button even on error
     } finally {

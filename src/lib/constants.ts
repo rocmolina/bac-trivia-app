@@ -1,6 +1,7 @@
 // src/lib/constants.ts
 
 export const POINTS_PER_TRIVIA_CORRECT = 3;
+export const POINTS_PER_GOLDEN_TRIVIA_CORRECT = 6;
 
 export const CATEGORIES = [
     { id: 'Ahorro', name: 'Ahorro', svgUrl: '/icons/ahorro.svg' },

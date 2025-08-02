@@ -44,40 +44,6 @@ export default function LoginPage() {
     }
   };
 
-  // return (
-  //     <div className="flex items-center justify-center min-h-screen">
-  //         <div className="p-8 max-w-md w-full bg-white rounded-lg shadow-md">
-  //             <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
-  //                 BAC Trivia - Iniciar Sesión
-  //             </h2>
-  //             <form onSubmit={handleSubmit} className="space-y-4">
-  //                 <Input
-  //                     label="UsuarioID (Ej: Nombre-Numero)"
-  //                     id="usuarioId"
-  //                     type="text"
-  //                     value={usuarioId}
-  //                     onChange={(e) => setUsuarioId(e.target.value)}
-  //                     placeholder="TuUsuario-123"
-  //                     required
-  //                     error={error && error.includes('UsuarioID') ? error : undefined}
-  //                 />
-  //                 {error && ( // Mostrar error general si no es específico del campo
-  //                     <p className="text-sm text-red-600">{error}</p>
-  //                 )}
-  //                 <Button type="submit" className="w-full" isLoading={isLoading}>
-  //                     Ingresar
-  //                 </Button>
-  //                 <p className="text-sm text-center text-gray-600">
-  //                     ¿No tienes cuenta?{' '}
-  //                     <a href="/register" className="font-medium text-red-600 hover:text-red-500">
-  //                         Regístrate aquí
-  //                     </a>
-  //                 </p>
-  //             </form>
-  //         </div>
-  //     </div>
-  // );
-
   return (
     <div className="h-full w-full flex flex-col items-center bg-red-500 p-3">
       <div className="relative w-full h-[400px]">
@@ -115,7 +81,7 @@ export default function LoginPage() {
               type="text"
               value={usuarioId}
               onChange={(e) => setUsuarioId(e.target.value)}
-              placeholder="usuario-123..."
+              placeholder="usuario..."
               required
               error={error && error.includes("UsuarioID") ? error : undefined}
             />
@@ -129,7 +95,7 @@ export default function LoginPage() {
               Iniciar Sesión
             </Button>
             <p className="text-sm text-center text-gray-600">
-              ¿No tienes cuenta?{" "}
+              ¿No tienes usuario?{" "}
               <a
                 href="/register"
                 className="font-medium text-red-600 hover:text-red-700 underline"

@@ -71,6 +71,7 @@ export interface CollectedItem {
     answeredCorrectly: boolean;
     timestamp: string; // ISO String o Firestore Timestamp (string para simplicidad en frontend)
     pointsGained: number;
+    isGolden: boolean; // Added this new line
 }
 
 export interface LastPlayedTotemInfo {
@@ -170,10 +171,11 @@ export const submitTriviaAnswer = async (
     triviaId: string,
     selectedOptionIndex: number,
     totemId: string, // ID del documento del tótem donde se jugó
-    qrCodeData: string // Dato del QR del tótem
+    qrCodeData: string, // Dato del QR del tótem
+    isGolden: boolean // New added isGolden parameter
 ): Promise<SubmitTriviaResponse> => {
     const endpoint = '/submitTriviaAnswer';
-    const payload = { userFirestoreId, triviaId, selectedOptionIndex, totemId, qrCodeData };
+    const payload = { userFirestoreId, triviaId, selectedOptionIndex, totemId, qrCodeData, isGolden }; // Added isGolden to payload
     console.log('API submitTriviaAnswer Request:', apiClient.defaults.baseURL + endpoint, payload);
     try {
         const response = await apiClient.post<SubmitTriviaResponse>(endpoint, payload);
