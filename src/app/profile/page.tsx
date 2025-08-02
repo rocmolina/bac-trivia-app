@@ -42,13 +42,13 @@ function ProfileContent() {
   const calculatePointsForCategory = (category: CategoryId): number => {
     if (!itemsCollected) return 0;
 
-    const categoryItems = itemsCollected.filter(
-      (item) =>
-        item.category?.toLowerCase() === category.toLowerCase() &&
-        item.answeredCorrectly,
-    );
-    // Usamos POINTS_PER_TRIVIA_CORRECT, o podrías usar item.pointsGained si cada item ya lo tiene
-    return categoryItems.length * POINTS_PER_TRIVIA_CORRECT;
+    return itemsCollected
+      .filter(
+        (item) =>
+          item.category?.toLowerCase() === category.toLowerCase() &&
+          item.answeredCorrectly,
+      )
+      .reduce((total, item) => total + (item.pointsGained || 0), 0);
   };
 
   // Componente para renderizar cada categoría con su puntaje e imagen
@@ -58,9 +58,9 @@ function ProfileContent() {
     const pointsForThisCategory = calculatePointsForCategory(category.id);
     const imageSize = 96; // Tamaño de la imagen SVG (ej. w-16 h-16) - un poco más grande
     const categoryName =
-      category.name === "Carro" || category.name === "Casa"
-        ? category.name + " BAC"
-        : category.name;
+      category.name === "Carro"
+        ? "Auto BAC"
+        : (category.name === "Casa" ? category.name + " BAC" : category.name);
 
     return (
       <div className="flex flex-col items-center justify-center rounded-lg shadow-md bg-red-100 p-2">
