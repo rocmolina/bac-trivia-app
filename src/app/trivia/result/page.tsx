@@ -60,10 +60,10 @@ function TriviaResultContent() {
     }
   }
 
-  const title = isSuccess ? "¡Excelente Trabajo!" : "¡Oh No!";
+  const title = isSuccess ? "¡Excelente trabajo!" : "¡Oh no!";
   const message = isSuccess
-    ? `Has Ganado +${pointsGained} puntos!`
-    : "Respuesta Equivocada";
+    ? `Has ganado +${pointsGained} puntos!`
+    : "Respuesta equivocada";
   const bgColor = isSuccess ? "bg-red-500" : "bg-red-700"; // Similar a las imágenes de ejemplo
   const textColor = "text-white";
   const imageContainerBg = "bg-white"; //solicitado por el cliente
@@ -124,14 +124,14 @@ function TriviaResultContent() {
             onClick={() => router.push("/play")}
             className="w-full py-3 text-lg bg-red-600 hover:bg-red-700 text-black font-semibold shadow-md"
           >
-            Volver a Jugar
+            Volver a jugar
           </Button>
           <Button
             onClick={() => router.push("/profile")}
             variant="secondary"
             className="w-full py-3 text-lg bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 shadow-md"
           >
-            Ir al Perfil
+            Ir al perfil
           </Button>
         </div>
       </div>

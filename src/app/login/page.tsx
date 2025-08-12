@@ -69,7 +69,7 @@ export default function LoginPage() {
           <h2 className="text-2xl font-bold text-center mb-6 border-0 border-[#00000000] text-[#000000]">
             {" "}
             {/* Texto gris */}
-            Iniciar Sesión
+            Iniciar sesión
           </h2>
           <form
             onSubmit={handleSubmit}
@@ -92,7 +92,7 @@ export default function LoginPage() {
               className="w-full bg-red-600 hover:bg-red-700 text-gray-500 font-bold py-3"
               isLoading={isLoading}
             >
-              Iniciar Sesión
+              Iniciar sesión
             </Button>
             <p className="text-sm text-center text-gray-600">
               ¿No tienes usuario?{" "}
