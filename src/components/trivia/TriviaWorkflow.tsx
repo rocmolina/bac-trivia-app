@@ -246,7 +246,7 @@ export default function TriviaWorkflow() {
             variant="secondary"
             className="border-red-600 text-red-600 hover:bg-red-100"
           >
-            Volver al Perfil
+            Volver al perfil
           </Button>
         </div>
       </div>
@@ -274,7 +274,7 @@ export default function TriviaWorkflow() {
             variant="secondary"
             className="border-red-600 text-red-600 hover:bg-red-100"
           >
-            Volver al Perfil
+            Volver al perfil
           </Button>
         </div>
       </div>
@@ -365,7 +365,7 @@ export default function TriviaWorkflow() {
               isLoading={isSubmitting}
               className="w-full text-lg py-3 bg-red-600 hover:bg-red-700 text-black font-semibold"
             >
-              Enviar Respuesta
+              Enviar respuesta
             </Button>
             {/* El botón Continuar al Perfil ya no es necesario aquí */}
           </div>

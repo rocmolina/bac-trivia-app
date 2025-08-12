@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     if (!adminId || !password) {
-      setError("Admin ID y Contraseña son requeridos.");
+      setError("Admin ID y contraseña son requeridos.");
       setIsLoading(false);
       return;
     }

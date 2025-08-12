@@ -122,7 +122,7 @@ function ProfileContent() {
         </div>
         <div className="flex flex-1 flex-col">
           <h3 className="text-sm font-semibold text-gray-900 mb-4 text-center">
-            Puntos por Categoría
+            Puntos por categoría
           </h3>
           {/* Grid para las 4 categorías */}
           <div className="h-full grid grid-cols-2 gap-5">
@@ -138,14 +138,14 @@ function ProfileContent() {
             onClick={handlePlayClick}
             className="w-full py-3 text-lg bg-red-600 hover:bg-red-700 text-black font-semibold"
           >
-            ¡A Jugar!
+            ¡A jugar!
           </Button>
           <Button
             onClick={handleLogoutClick}
             variant="secondary"
             className="w-full py-2.5 text-sm text-red-600 hover:bg-red-100 border border-red-200 hover:border-red-300"
           >
-            Cerrar Sesión
+            Cerrar sesión
           </Button>
         </div>
       </div>
