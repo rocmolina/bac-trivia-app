@@ -47,17 +47,18 @@ function TriviaResultContent() {
     (c) => c.id.toLowerCase() === category.toLowerCase(),
   );
 
-  let finalImageUrl = categoryDetails?.svgUrl || "/icons/default.svg";
+  let finalImageUrl = categoryDetails?.svgUrl || "/icons/default.svg"; // Imagen por defecto si no se encuentra la categoría
 
+  //Ajustar imagen si es dorado
   if (isGolden) {
     finalImageUrl = finalImageUrl.replace(".svg", "_golden.svg");
   }
 
-  if (!isSuccess) {
+  // Ajustar imagen según éxito o fracaso
+  if (isSuccess) {
+    finalImageUrl = finalImageUrl.replace(".svg", "_happy.svg");
+  } else {
     finalImageUrl = finalImageUrl.replace(".svg", "_sad.svg");
-    if (isGolden) {
-      finalImageUrl = finalImageUrl.replace("_golden.svg", "_golden_sad.svg");
-    }
   }
 
   const title = isSuccess ? "¡Excelente trabajo!" : "¡Oh no!";

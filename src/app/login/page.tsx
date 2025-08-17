@@ -76,7 +76,7 @@ export default function LoginPage() {
             className="space-y-4 relative top-auto right-auto bottom-auto left-auto w-full flex flex-col gap-[8px]"
           >
             <Input
-              label="ID de Usuario:"
+              label="ID de usuario:"
               id="usuarioId"
               type="text"
               value={usuarioId}
@@ -95,7 +95,6 @@ export default function LoginPage() {
               Iniciar sesión
             </Button>
             <p className="text-sm text-center text-gray-600">
-              ¿No tienes usuario?{" "}
               <a
                 href="/register"
                 className="font-medium text-red-600 hover:text-red-700 underline"

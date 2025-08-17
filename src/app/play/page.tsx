@@ -103,7 +103,7 @@ const WebARViewer = () => {
         className="fixed bottom-8 left-1/2 transform -translate-x-1/2"
         onClick={() => router.push("/profile")}
       >
-        Back to Menu
+        Volver al perfil
       </Button>
     </div>
   );
