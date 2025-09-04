@@ -63,7 +63,7 @@ function TriviaResultContent() {
 
   const title = isSuccess ? "¡Excelente trabajo!" : "¡Oh no!";
   const message = isSuccess
-    ? `Has ganado +${pointsGained} puntos!`
+    ? `¡Has ganado +${pointsGained} puntos!`
     : "Respuesta equivocada";
   const bgColor = isSuccess ? "bg-red-500" : "bg-red-700"; // Similar a las imágenes de ejemplo
   const textColor = "text-white";

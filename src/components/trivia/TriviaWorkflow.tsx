@@ -320,7 +320,11 @@ export default function TriviaWorkflow() {
           <div>
             <div className="flex flex-col items-center justify-center bg-red-700 rounded-full mb-[24px]">
               <h1 className="text-2xl sm:text-3xl font-bold text-white text">
-                {question.category}
+                {question.category === "carro"
+                  ? "Auto BAC"
+                  : question.category === "casa"
+                    ? "Casa BAC"
+                    : question.category}
               </h1>
             </div>
             <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-md">
